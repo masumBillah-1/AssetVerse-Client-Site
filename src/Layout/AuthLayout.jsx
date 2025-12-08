@@ -6,14 +6,14 @@ import { Outlet } from 'react-router';
 
 const AuthLayout = () => {
     return (
-        <div className="min-h-screen flex bg-white">
+        <div>
 
 
     
 
                 {/* Form container (centered outlet) */}
               
-                    <div className="w-full max-w-md border-gray-100">
+                    <div >
                         <Outlet/>
                     </div>
             
