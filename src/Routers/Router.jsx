@@ -4,6 +4,7 @@ import Home from "../Pages/Home/Home";
 import AuthLayout from "../Layout/AuthLayout";
 import Login from "../Pages/Auth/login/Login";
 import Register from "../Pages/Auth/Register/Register";
+import RolePage from "../Pages/RolePage";
 
 
 export const router = createBrowserRouter ([
@@ -39,6 +40,11 @@ export const router = createBrowserRouter ([
             {
                 path: 'register',
                 Component: Register
+            }, 
+            {
+                path:'select-role',
+                Component: RolePage
+                
             }
            
             

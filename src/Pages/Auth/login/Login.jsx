@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-// import { Link, useLocation, useNavigate } from 'react-router';
-// import { motion } from 'framer-motion';
-// import { useForm } from 'react-hook-form';
-// import useAuth from '../../../Hooks/useAuth';
-// import SocialLogin from '../SocialLogin/SocialLogin';
-
-
 import { useForm } from "react-hook-form";
+import toast, { Toaster } from 'react-hot-toast'; // ← import toast
+import useAuth from '../../../Hooks/useAuth';
+import { useNavigate, useLocation } from 'react-router';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
+  const { signInUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const onSubmit = (data) => {
-    setIsSubmitting(true);
-    console.log(data);
-    // এখানে Firebase বা API call করে login করা যাবে
-    setTimeout(() => setIsSubmitting(false), 1000);
-  };
+  setIsSubmitting(true);
+  console.log(data);
+
+  signInUser(data.email, data.password)
+    .then(result => {
+      console.log(result.user);
+      toast.success("Login Successful!");
+      navigate(location?.state?.from || '/');
+    })
+    .catch(error => {
+      console.log(error);
+
+      // যদি user না থাকে, Register page এ পাঠাও
+      if (error.code === "auth/user-not-found") {
+        toast.error("Account not found! Redirecting to Register...");
+        navigate('/register');
+      } else {
+        // অন্য কোনো Firebase error হলে শুধু দেখাও
+        toast.error(error.message);
+      }
+    })
+    .finally(() => setIsSubmitting(false));
+};
+
+
 
   return (
     <div className="min-h-screen flex bg-gradient-to-r from-[#063A3A] to-[#0A4D4D]">
