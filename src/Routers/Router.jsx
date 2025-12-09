@@ -10,7 +10,12 @@ import AddAsset from "../Pages/Dashboard/HrManager/AddAsset";
 import AllRequest from "../Pages/Dashboard/HrManager/AllRequest";
 import EmployeeList from "../Pages/Dashboard/HrManager/EmployeeList";
 import UpgradePackage from "../Pages/Dashboard/HrManager/UpgradePackage";
-import Profile from "../Pages/Dashboard/HrManager/Profile";
+import Profile from "../Pages/Dashboard/HrManager/HrProfile";
+import MyAssets from "../Pages/Dashboard/Employer/MyAssets";
+import MyTeam from "../Pages/Dashboard/Employer/MyTeam";
+import HrProfile from "../Pages/Dashboard/HrManager/HrProfile";
+import RequestAsset from "../Pages/Dashboard/Employer/RequestAsset";
+import EmProfile from "../Pages/Dashboard/Employer/EmProfile";
 
 
 export const router = createBrowserRouter ([
@@ -77,9 +82,27 @@ export const router = createBrowserRouter ([
                 Component: UpgradePackage
             },
             {
-                path: 'profile',
-                Component: Profile
+                path: 'hr-profile',
+                Component: HrProfile
             },
+            {
+                path: 'my-assets',
+                Component: MyAssets
+            },
+            {
+                path: 'request-asset',
+                Component: RequestAsset
+            },
+            {
+                path: 'my-team',
+                Component: MyTeam
+            },
+            {
+                path: 'em-profile',
+                Component: EmProfile
+            },
+
+
         ]
         
     }

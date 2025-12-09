@@ -1,14 +1,13 @@
 import React from 'react';
 
-const Profile = () => {
+const MyTeam = () => {
     return (
         <div>
 
-
-            <h2>Profile Page</h2>
+            <h2>My TEam</h2>
             
         </div>
     );
 };
 
-export default Profile;
+export default MyTeam;

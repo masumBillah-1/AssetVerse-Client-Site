@@ -35,14 +35,14 @@ export default function DashboardLayout() {
     { icon: FileText, label: "All Requests", path: "/dashboard/all-requests" },
     { icon: Users, label: "Employee List", path: "/dashboard/employee-list" },
     { icon: Crown, label: "Upgrade Package", path: "/dashboard/upgrade-package" },
-    { icon: User, label: "Profile", path: "/dashboard/profile" },
+    { icon: User, label: "Profile", path: "/dashboard/hr-profile" },
   ];
 
   const employeeMenuItems = [
     { icon: Package, label: "My Assets", path: "/dashboard/my-assets" },
     { icon: Plus, label: "Request Asset", path: "/dashboard/request-asset" },
     { icon: Users, label: "My Team", path: "/dashboard/my-team" },
-    { icon: User, label: "Profile", path: "/dashboard/profile" },
+    { icon: User, label: "Profile", path: "/dashboard/em-profile" },
   ];
 
   const menuItems = currentRole === "hr" ? hrMenuItems : employeeMenuItems;
