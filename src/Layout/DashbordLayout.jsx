@@ -18,7 +18,15 @@ export default function DashboardLayout() {
   const { role: userRole, isLoading } = useRole(); // 🔹 get role from server
 
   // loading handle
-  if (isLoading) return <p>Loading...</p>;
+if (isLoading) {
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center">
+        <Package className="w-10 h-10 text-[var(--primary)] animate-spin" />
+      </div>
+    </div>
+  );
+}
 
   const MenuItems = [
     { icon: Home, label: "Asset List", path: "/dashboard", role: "hr" },
