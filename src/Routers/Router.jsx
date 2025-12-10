@@ -18,6 +18,8 @@ import AllRequestsPage from "../Pages/Dashboard/HrManager/AllRequestsPage";
 import AddAssetPage from "../Pages/Dashboard/HrManager/AddAssetPage";
 import Profile from "../Pages/Dashboard/Profile/Profile";
 import AssetListPage from "../Pages/Dashboard/HrManager/AssetListPage";
+import PaymentSuccess from "../Pages/Dashboard/Payment/PaymentSuccess";
+import PaymentCancel from "../Pages/Dashboard/Payment/PaymentCancel";
 
 
 export const router = createBrowserRouter ([
@@ -103,7 +105,15 @@ export const router = createBrowserRouter ([
                 path: 'my-team',
                 Component: MyTeam
             },
-           
+            {
+                path: 'success',
+                Component: PaymentSuccess
+            },
+            {
+                path: 'cancel',
+                Component: PaymentCancel
+            }
+                    
 
 
         ]

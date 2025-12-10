@@ -23,7 +23,7 @@ const AssetListPage = () => {
         setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
       } catch (err) {
         console.error(err);
-        Swal.fire("Error", "Failed to fetch assets", "error");
+        Swal.fire("Error", "Poor Network 🛜", "error");
       }
     };
     fetchAssets();

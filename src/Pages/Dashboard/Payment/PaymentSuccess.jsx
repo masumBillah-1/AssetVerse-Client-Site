@@ -1,39 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { CheckCircle } from 'lucide-react';
-import useAxios from '../Hooks/useAxios';
+
 import Swal from 'sweetalert2';
+import useAxios from '../../../Hooks/useAxios';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const axiosInstance = useAxios();
   const [processing, setProcessing] = useState(true);
+  const hasRun = useRef(false); // Prevent double execution
 
   useEffect(() => {
+    // Prevent double execution in React Strict Mode
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const sessionId = searchParams.get('session_id');
     
     if (!sessionId) {
       Swal.fire('Error', 'Invalid payment session', 'error');
-      navigate('/');
+      navigate('/dashboard/upgrade-package');
       return;
     }
 
     // Save payment data to database
     const savePayment = async () => {
       try {
-        const hrEmail = localStorage.getItem('userEmail'); // অথবা আপনার auth থেকে email নিন
-        
+        const packageId = localStorage.getItem('selectedPackageId');
+        const packageName = localStorage.getItem('selectedPackageName');
+        const amount = localStorage.getItem('selectedPackagePrice');
+        const hrEmail = localStorage.getItem('userEmail');
+
+        // Validate data
+        if (!packageId || !packageName || !amount || !hrEmail) {
+          throw new Error('Missing payment information');
+        }
+
         const res = await axiosInstance.post('/payment-success', {
           sessionId,
           hrEmail,
-          packageId: localStorage.getItem('selectedPackageId'),
-          packageName: localStorage.getItem('selectedPackageName'),
-          amount: localStorage.getItem('selectedPackagePrice')
+          packageId,
+          packageName,
+          amount: parseFloat(amount) // Make sure it's a number
         });
 
         if (res.data.success) {
           setProcessing(false);
+          
           // Clear localStorage
           localStorage.removeItem('selectedPackageId');
           localStorage.removeItem('selectedPackageName');
@@ -43,20 +58,21 @@ const PaymentSuccess = () => {
             icon: 'success',
             title: 'Payment Successful!',
             text: 'Your subscription has been upgraded.',
-            timer: 2000
+            timer: 2000,
+            showConfirmButton: false
           });
 
-          setTimeout(() => navigate('/dashboard'), 2000);
+          setTimeout(() => navigate('/dashboard/upgrade-package'), 2000);
         }
       } catch (err) {
-        console.error(err);
-        Swal.fire('Error', 'Failed to save payment', 'error');
-        navigate('/');
+        console.error('Payment save error:', err);
+        Swal.fire('Error', 'Failed to save payment. Please contact support.', 'error');
+        navigate('/dashboard/upgrade-package');
       }
     };
 
     savePayment();
-  }, [searchParams, navigate, axiosInstance]);
+  }, []); // Empty dependency array - only run once
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
