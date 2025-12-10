@@ -70,18 +70,23 @@ const UpgradePackage = () => {
 
 
   const [users, setUser] = useState(null);
+  const subscriptionName = users?.subscription ? users.subscription.toLowerCase() : '';
+
 
 useEffect(() => {
-  // server থেকে current user fetch
   const fetchUser = async () => {
     try {
-      const res = await axiosInstance.get(`/users/${user?.email}`);
-      setUser(res.data);
+      if (!user?.email) return;
+
+      const res = await axiosInstance.get(`/users/${user.email}`);
+      setUser(res.data?.user); // শুধুমাত্র user object set করলাম
+
     } catch (err) {
       console.error('Failed to fetch user:', err);
     }
   };
-  if (user?.email) fetchUser();
+
+  fetchUser();
 }, [user?.email]);
 
   return (
@@ -161,27 +166,28 @@ useEffect(() => {
               </div>
 
               {/* Buy Button */}
-              <button
-                onClick={() => handleBuy(pkg)}
-                disabled={loadingId === pkg._id || users?.subscription === pkg.name.toLowerCase()}
-                className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    pkg.name === 'Standard' ? 'shadow-lg hover:shadow-xl' : ''
-                }`}
-                style={{
-                    backgroundColor: loadingId === pkg._id
-                    ? '#6b7280'
-                    : users?.subscription === pkg.name.toLowerCase()
-                        ? '#10b981'
-                        : '#06393a',
-                    color: 'white'
-                }}
-                >
-                {loadingId === pkg._id
-                    ? 'Processing...'
-                    : users?.subscription === pkg.name.toLowerCase()
-                    ? 'Subscription Active'
-                    : 'Get Started Now'}
-                </button>
+<button
+  onClick={() => handleBuy(pkg)}
+  disabled={loadingId === pkg._id || subscriptionName?.toLowerCase() === pkg.name.toLowerCase()}
+  className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 btn disabled:cursor-not-allowed ${
+    pkg.name === 'Standard' ? 'shadow-lg hover:shadow-xl' : ''
+  }`}
+  style={{
+    backgroundColor: loadingId === pkg._id
+      ? '#6b7280' // processing
+      : subscriptionName?.toLowerCase() === pkg.name.toLowerCase()
+        ? '#10b981' // active subscription
+        : '#06393a', // default
+    color: 'white'
+  }}
+>
+  {loadingId === pkg._id
+    ? 'Processing...'
+    : subscriptionName?.toLowerCase() === pkg.name.toLowerCase()
+      ? 'Subscription Active'
+      : 'Get Started Now'}
+</button>
+
             </div>
           ))}
         </div>
