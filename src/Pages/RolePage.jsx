@@ -1,20 +1,7 @@
-import React, { useState } from 'react';
-
-const API_BASE_URL = 'http://localhost:3000';
-
-// ✅ SweetAlert2 CDN থেকে লোড হবে
-const showAlert = (type, title, text) => {
-  if (window.Swal) {
-    window.Swal.fire({
-      icon: type,
-      title: title,
-      text: text,
-      confirmButtonColor: '#047857'
-    });
-  } else {
-    alert(`${title}: ${text}`);
-  }
-};
+import React, { useState, useEffect } from 'react';
+import useAuth from '../Hooks/useAuth';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
+import { useNavigate } from 'react-router';
 
 const RolePage = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -25,11 +12,11 @@ const RolePage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ⚠️ Replace with actual user email from Auth Context
-  const userEmail = "mb6517640@gmail.com";
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
 
-  // Load SweetAlert2
-  React.useEffect(() => {
+  useEffect(() => {
     if (!document.getElementById('sweetalert-script')) {
       const script = document.createElement('script');
       script.id = 'sweetalert-script';
@@ -38,40 +25,52 @@ const RolePage = () => {
     }
   }, []);
 
+  const showAlert = (type, title, text) => {
+    if (window.Swal) {
+      window.Swal.fire({ icon: type, title, text, confirmButtonColor: '#047857' });
+    } else {
+      alert(`${title}: ${text}`);
+    }
+  };
+
   const validateStep = () => {
     const newErrors = {};
-    
-    if (!selectedRole) {
-      newErrors.role = 'Please select a role';
-    }
-    
-    if (!dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of Birth is required';
-    }
-    
-    if (currentStep === 2) {
-      if (!companyName) {
-        newErrors.companyName = 'Company Name is required';
-      }
-    }
-    
+    if (!selectedRole) newErrors.role = 'Please select a role';
+    if (!dateOfBirth) newErrors.dateOfBirth = 'Date of Birth is required';
+    if (currentStep === 2 && !companyName) newErrors.companyName = 'Company Name is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const updateUserRole = async (data) => {
+    if (!user?.email) return showAlert('error', 'Not Logged In', 'Please login first');
+
+    try {
+      setLoading(true);
+      const response = await axiosSecure.patch(`/users/update-role/${user.email}`, data);
+
+      if (response.data?.success) {
+        showAlert('success', 'Registration Complete!', 'Redirecting to dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      } else {
+        showAlert('error', 'Registration Failed', response.data?.message || 'Something went wrong!');
+      }
+    } catch (err) {
+      console.error('❌ API Error:', err);
+      showAlert('error', 'Network Error', 'Failed to connect to server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNext = async () => {
     if (!validateStep() || loading) return;
 
     if (currentStep === 1 && selectedRole === 'employee') {
-      setLoading(true);
-      await updateUserRole({
-        role: 'employee',
-        dateOfBirth
-      });
+      await updateUserRole({ role: 'employee', dateOfBirth });
     } else if (currentStep === 1 && selectedRole === 'hr') {
       setCurrentStep(2);
-    } else if (currentStep === 2) {
-      setLoading(true);
+    } else if (currentStep === 2 && selectedRole === 'hr') {
       await updateUserRole({
         role: 'hr',
         companyName,
@@ -84,89 +83,24 @@ const RolePage = () => {
     }
   };
 
-  const updateUserRole = async (data) => {
-    try {
-      console.log('📤 Sending data:', data);
-      
-      const response = await fetch(`${API_BASE_URL}/users/update-role/${userEmail}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
-
-      console.log('📥 Response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('✅ Result:', result);
-
-      if (result.success) {
-        showAlert(
-          'success',
-          'Registration Complete!',
-          'You will be redirected to your dashboard.'
-        );
-        
-        // Navigate after 2 seconds
-        setTimeout(() => {
-          if (data.role === 'hr') {
-            console.log('Navigate to: /hr/dashboard');
-            // window.location.href = '/hr/dashboard';
-          } else {
-            console.log('Navigate to: /employee/dashboard');
-            // window.location.href = '/employee/dashboard';
-          }
-        }, 2000);
-      } else {
-        showAlert(
-          'error',
-          'Registration Failed',
-          result.message || 'Something went wrong!'
-        );
-      }
-    } catch (error) {
-      console.error('❌ API Error:', error);
-      showAlert(
-        'error',
-        'Network Error',
-        `Failed to connect to server. Please check if server is running on ${API_BASE_URL}`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentStep(1);
-    setErrors({});
-  };
-
-  const handleRoleChange = (role) => {
-    setSelectedRole(role);
-    setErrors({});
-  };
+  const handleBack = () => { setCurrentStep(1); setErrors({}); };
+  const handleRoleChange = (role) => { setSelectedRole(role); setErrors({}); };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
           
+          {/* Step 1: Select Role */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">Select Your Role</h2>
-                <p className="text-gray-600">Step 1 of {selectedRole === 'hr' ? '2' : '1'} - Choose how you'll use the platform</p>
+                <p className="text-gray-600">Step 1 of {selectedRole === 'hr' ? '2' : '1'}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                  I am a...
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-4">I am a...</label>
                 <div className="grid grid-cols-1 gap-4">
                   <label className="relative cursor-pointer">
                     <input 
@@ -210,15 +144,11 @@ const RolePage = () => {
                     </div>
                   </label>
                 </div>
-                {errors.role && (
-                  <p className="text-red-500 text-sm mt-2">{errors.role}</p>
-                )}
+                {errors.role && <p className="text-red-500 text-sm mt-2">{errors.role}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
                 <input 
                   type="date"
                   value={dateOfBirth}
@@ -226,9 +156,7 @@ const RolePage = () => {
                   max={new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
                 />
-                {errors.dateOfBirth && (
-                  <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>
-                )}
+                {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>}
               </div>
 
               <button 
@@ -236,48 +164,33 @@ const RolePage = () => {
                 disabled={!selectedRole || !dateOfBirth || loading}
                 className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  selectedRole === "employee" ? "Complete Registration ✓" : "Next Step →"
-                )}
+                {loading ? "Processing..." : selectedRole === "employee" ? "Complete Registration ✓" : "Next Step →"}
               </button>
             </div>
           )}
 
+          {/* Step 2: HR Company Details */}
           {currentStep === 2 && selectedRole === "hr" && (
             <div className="space-y-6">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">Company Details</h2>
-                <p className="text-gray-600">Step 2 of 2 - Tell us about your company</p>
+                <p className="text-gray-600">Step 2 of 2</p>
               </div>
 
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name <span className="text-red-500">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name <span className="text-red-500">*</span></label>
                   <input 
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
                     placeholder="Your Company Name"
                   />
-                  {errors.companyName && (
-                    <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
-                  )}
+                  {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Logo URL <span className="text-gray-400">(Optional)</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo URL <span className="text-gray-400">(Optional)</span></label>
                   <input 
                     value={companyLogo}
                     onChange={(e) => setCompanyLogo(e.target.value)}
@@ -287,43 +200,17 @@ const RolePage = () => {
                   {companyLogo && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs text-gray-600 mb-2">Preview:</p>
-                      <img 
-                        src={companyLogo} 
-                        alt="Company Logo" 
-                        className="h-16 w-16 object-contain border border-gray-200 rounded"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
+                      <img src={companyLogo} alt="Company Logo" className="h-16 w-16 object-contain border border-gray-200 rounded"
+                        onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <button 
-                  onClick={handleBack}
-                  disabled={loading}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50"
-                >
-                  ← Back
-                </button>
-                <button 
-                  onClick={handleNext}
-                  disabled={!companyName || loading}
-                  className="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    "Complete Registration ✓"
-                  )}
+                <button onClick={handleBack} disabled={loading} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50">← Back</button>
+                <button onClick={handleNext} disabled={!companyName || loading} className="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                  {loading ? "Processing..." : "Complete Registration ✓"}
                 </button>
               </div>
             </div>

@@ -183,9 +183,9 @@ const handleSignIn = () => {
 
             // 4️⃣ Navigate based on role of existing user
             if (existingUser.role === "hr") {
-                navigate("/hr/dashboard");
+                navigate("/dashboard");
             } else if (existingUser.role === "employee") {
-                navigate("/employee/dashboard");
+                navigate("/dashboard");
             } else {
                 toast.error("Invalid user role!");
             }

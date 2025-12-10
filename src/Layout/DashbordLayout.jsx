@@ -1,51 +1,40 @@
 import React, { useState } from "react";
-import {
-  Menu,
-  Package,
-  Plus,
-  FileText,
-  Users,
-  Crown,
-  User,
-  LogOut,
-  Bell,
-  Home,
-} from "lucide-react";
+import { Menu, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router";
+import useRole from "../Hooks/useRole";
+import useAuth from "../Hooks/useAuth";
 
-// ============================================
-// DASHBOARD LAYOUT (Sidebar + Header)
-// Outlet দিয়ে child components render হবে
-// ============================================
+
 
 export default function DashboardLayout() {
   const PRIMARY = "#063A3A";
   const ACCENT = "#CBDCBD";
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [currentRole, setCurrentRole] = useState("hr");
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Menu items
-  const hrMenuItems = [
-    { icon: Home, label: "Asset List", path: "/dashboard" },
-    { icon: Plus, label: "Add Asset", path: "/dashboard/add-asset" },
-    { icon: FileText, label: "All Requests", path: "/dashboard/all-requests" },
-    { icon: Users, label: "Employee List", path: "/dashboard/employee-list" },
-    { icon: Crown, label: "Upgrade Package", path: "/dashboard/upgrade-package" },
-    { icon: User, label: "Profile", path: "/dashboard/hr-profile" },
+  const { user } = useAuth();
+  const { role: userRole, isLoading } = useRole(); // 🔹 get role from server
+
+  // loading handle
+  if (isLoading) return <p>Loading...</p>;
+
+  const MenuItems = [
+    { icon: Home, label: "Asset List", path: "/dashboard", role: "hr" },
+    { icon: Plus, label: "Add Asset", path: "/dashboard/add-asset", role: "hr" },
+    { icon: FileText, label: "All Requests", path: "/dashboard/all-requests", role: "hr" },
+    { icon: Users, label: "Employee List", path: "/dashboard/employee-list", role: "hr" },
+    { icon: Crown, label: "Upgrade Package", path: "/dashboard/upgrade-package", role: "hr" },
+    { icon: User, label: "Profile", path: "/dashboard/profile", role: "hr" },
+
+    { icon: Package, label: "My Assets", path: "/dashboard/my-assets", role: "employee" },
+    { icon: Plus, label: "Request Asset", path: "/dashboard/request-asset", role: "employee" },
+    { icon: Users, label: "My Team", path: "/dashboard/my-team", role: "employee" },
+    { icon: User, label: "Profile", path: "/dashboard/profile", role: "employee" },
   ];
 
-  const employeeMenuItems = [
-    { icon: Package, label: "My Assets", path: "/dashboard/my-assets" },
-    { icon: Plus, label: "Request Asset", path: "/dashboard/request-asset" },
-    { icon: Users, label: "My Team", path: "/dashboard/my-team" },
-    { icon: User, label: "Profile", path: "/dashboard/em-profile" },
-  ];
-
-  const menuItems = currentRole === "hr" ? hrMenuItems : employeeMenuItems;
+  const filteredMenuItems = MenuItems.filter(item => item.role === userRole);
 
   return (
     <div className="min-h-screen flex bg-[var(--accent)]" style={{ ['--primary']: PRIMARY, ['--accent']: ACCENT }}>
@@ -67,27 +56,13 @@ export default function DashboardLayout() {
             </button>
           </div>
 
-          {/* Role Switcher */}
-          {sidebarOpen && (
-            <div className="mb-6 p-3 bg-[var(--accent)]/10 rounded-lg">
-              <select
-                value={currentRole}
-                onChange={(e) => setCurrentRole(e.target.value)}
-                className="w-full bg-[var(--accent)] text-[var(--primary)] px-3 py-2 rounded-lg font-semibold cursor-pointer"
-              >
-                <option value="hr">HR Manager</option>
-                <option value="employee">Employee</option>
-              </select>
-            </div>
-          )}
-
           {/* Menu */}
           <nav className="space-y-2">
-            {menuItems.map((item, i) => (
+            {filteredMenuItems.map((item, i) => (
               <button
                 key={i}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                className={`w-full flex items-center cursor-pointer space-x-3 px-4 py-3 rounded-lg transition-all ${
                   location.pathname === item.path
                     ? "bg-[var(--accent)] text-[var(--primary)]"
                     : "text-[var(--accent)] hover:bg-[var(--accent)]/10"
@@ -116,7 +91,7 @@ export default function DashboardLayout() {
           <div className="px-6 py-4 flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-[var(--primary)]">
-                {menuItems.find((item) => item.path === location.pathname)?.label || "Dashboard"}
+                {filteredMenuItems.find((item) => item.path === location.pathname)?.label || "Dashboard"}
               </h1>
               <p className="text-sm text-gray-600">Welcome back! Manage your assets efficiently</p>
             </div>
@@ -126,8 +101,12 @@ export default function DashboardLayout() {
                 <Bell className="w-6 h-6 text-[var(--primary)]" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
-              <div className="w-10 h-10 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold">
-                {currentRole === "hr" ? "HR" : "E"}
+              <div className="w-10 h-10 rounded-full overflow-hidden">
+                <img
+                    src={user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
+                    alt="profile"
+                    className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>

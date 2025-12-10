@@ -6,16 +6,17 @@ import Login from "../Pages/Auth/login/Login";
 import Register from "../Pages/Auth/Register/Register";
 import RolePage from "../Pages/RolePage";
 import DashboardLayout from "../Layout/DashbordLayout";
-import AddAsset from "../Pages/Dashboard/HrManager/AddAsset";
-import AllRequest from "../Pages/Dashboard/HrManager/AllRequest";
 import EmployeeList from "../Pages/Dashboard/HrManager/EmployeeList";
 import UpgradePackage from "../Pages/Dashboard/HrManager/UpgradePackage";
-import Profile from "../Pages/Dashboard/HrManager/HrProfile";
 import MyAssets from "../Pages/Dashboard/Employer/MyAssets";
 import MyTeam from "../Pages/Dashboard/Employer/MyTeam";
-import HrProfile from "../Pages/Dashboard/HrManager/HrProfile";
+
 import RequestAsset from "../Pages/Dashboard/Employer/RequestAsset";
-import EmProfile from "../Pages/Dashboard/Employer/EmProfile";
+
+
+import AllRequestsPage from "../Pages/Dashboard/HrManager/AllRequestsPage";
+import AddAssetPage from "../Pages/Dashboard/HrManager/AddAssetPage";
+import Profile from "../Pages/Dashboard/Profile/Profile";
 
 
 export const router = createBrowserRouter ([
@@ -67,11 +68,11 @@ export const router = createBrowserRouter ([
         children: [
             {
                 path: 'add-asset',
-                Component: AddAsset
+                Component: AddAssetPage
             },
             {
                 path: 'all-requests',
-                Component: AllRequest
+                Component: AllRequestsPage
             },
             {
                 path: 'employee-list',
@@ -82,8 +83,8 @@ export const router = createBrowserRouter ([
                 Component: UpgradePackage
             },
             {
-                path: 'hr-profile',
-                Component: HrProfile
+                path: 'profile',
+                Component: Profile
             },
             {
                 path: 'my-assets',
@@ -97,10 +98,7 @@ export const router = createBrowserRouter ([
                 path: 'my-team',
                 Component: MyTeam
             },
-            {
-                path: 'em-profile',
-                Component: EmProfile
-            },
+           
 
 
         ]
