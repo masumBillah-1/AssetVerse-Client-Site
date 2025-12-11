@@ -1,6 +1,9 @@
 import React from 'react';
 
-const MyAssets = ({ assignedAssets, returnAssignedAsset, PRIMARY, ACCENT }) => {
+
+
+
+const MyAssets = () => {
     return (
         <div className="space-y-6">
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
