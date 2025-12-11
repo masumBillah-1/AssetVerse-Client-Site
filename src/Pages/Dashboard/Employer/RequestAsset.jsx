@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
+import useAuth from '../../../Hooks/useAuth';
+import useAxios from '../../../Hooks/useAxios';
+
+
 const RequestAsset = () => {
+  const axiosPublic = useAxios();
+  const { user } = useAuth();
+  
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [note, setNote] = useState("");
-  const [filter, setFilter] = useState("all"); // all, returnable, non-returnable
+  const [filter, setFilter] = useState("all");
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch assets from MongoDB
   useEffect(() => {
@@ -32,22 +40,61 @@ const RequestAsset = () => {
   };
 
   const handleSubmitRequest = async () => {
-    if (!selectedAsset) return;
+    if (!selectedAsset || !note.trim()) return;
+    
+    setSubmitting(true);
     
     const requestData = {
       assetId: selectedAsset._id,
       assetName: selectedAsset.assetName,
+      assetType: selectedAsset.assetType,
+      assetImage: selectedAsset.assetImage,
       note: note,
       requestDate: new Date(),
-      status: "pending"
+      requestStatus: "pending",
+      // Auth থেকে employee info
+      employeeId: user?.uid,
+      employeeName: user?.displayName || user?.name,
+      employeeEmail: user?.email,
+      // Asset থেকে company/HR info
+      companyId: selectedAsset.companyId,
+      hrId: selectedAsset.addedBy?.uid,
+      hrEmail: selectedAsset.addedBy?.email,
     };
 
-    console.log("Request submitted:", requestData);
-    // Here you can add API call to save the request
-    
-    setShowModal(false);
-    setNote("");
-    setSelectedAsset(null);
+    try {
+      // Request save করা
+      const response = await axiosPublic.post("/requests", requestData);
+      console.log("✅ Request saved:", response.data);
+
+      // Asset quantity কমানো
+      const updatedQuantity = selectedAsset.quantity - 1;
+      await axiosPublic.patch(`/assets/${selectedAsset._id}`, {
+        quantity: updatedQuantity
+      });
+
+      console.log("✅ Asset quantity updated");
+
+      // Local state update
+      setAssets(prevAssets => 
+        prevAssets.map(asset => 
+          asset._id === selectedAsset._id 
+            ? { ...asset, quantity: updatedQuantity }
+            : asset
+        )
+      );
+
+      alert("✅ Request sent successfully!");
+      setShowModal(false);
+      setNote("");
+      setSelectedAsset(null);
+
+    } catch (error) {
+      console.error("❌ Failed to send request:", error);
+      alert("❌ Request failed! Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Filter assets
@@ -82,7 +129,7 @@ const RequestAsset = () => {
         <div className="bg-white rounded-2xl shadow-lg p-2 mb-6 inline-flex gap-2">
           <button
             onClick={() => setFilter("all")}
-            className={`px-6 py-3 rounded-xl cursor-pointer font-semibold transition-all ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === "all"
                 ? "bg-[#06393a] text-white shadow-lg"
                 : "text-gray-600 hover:bg-gray-100"
@@ -92,7 +139,7 @@ const RequestAsset = () => {
           </button>
           <button
             onClick={() => setFilter("returnable")}
-            className={`px-6 py-3 rounded-xl cursor-pointer font-semibold transition-all ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === "returnable"
                 ? "bg-[#06393a] text-white shadow-lg"
                 : "text-gray-600 hover:bg-gray-100"
@@ -102,7 +149,7 @@ const RequestAsset = () => {
           </button>
           <button
             onClick={() => setFilter("non-returnable")}
-            className={`px-6 py-3 rounded-xl cursor-pointer font-semibold transition-all ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               filter === "non-returnable"
                 ? "bg-[#06393a] text-white shadow-lg"
                 : "text-gray-600 hover:bg-gray-100"
@@ -151,9 +198,9 @@ const RequestAsset = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs  text-gray-600">Return:</span>
+                    <span className="text-xs text-gray-600">Return:</span>
                     <span
-                      className={`px-2  py-1 rounded-full text-xs font-bold ${
+                      className={`px-2 py-1 rounded-full text-xs font-bold ${
                         asset.returnType === "returnable"
                           ? "bg-teal-100 text-teal-700"
                           : "bg-emerald-100 text-emerald-700"
@@ -172,7 +219,7 @@ const RequestAsset = () => {
                 {/* Request Button */}
                 <button
                   onClick={() => handleRequestClick(asset)}
-                  className="w-full py-2.5 cursor-pointer bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 hover:shadow-lg transition-all duration-300"
+                  className="w-full py-2.5 bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 hover:shadow-lg transition-all duration-300"
                 >
                   Request Asset
                 </button>
@@ -220,16 +267,16 @@ const RequestAsset = () => {
                   setNote("");
                   setSelectedAsset(null);
                 }}
-                className="flex-1 cursor-pointer py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitRequest}
                 disabled={!note.trim()}
-                className={`flex-1 py-3 rounded-xl cursor-pointer font-semibold transition-all ${
+                className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
                   note.trim()
-                    ? "bg-[#06393a]  text-white hover:bg-[#06393a]/90 hover:shadow-lg"
+                    ? "bg-[#06393a] text-white hover:bg-[#06393a]/90 hover:shadow-lg"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >

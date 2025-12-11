@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import useRole from "../Hooks/useRole";
@@ -16,7 +16,14 @@ export default function DashboardLayout() {
 
   const { user } = useAuth();
   const { role: userRole, isLoading } = useRole(); // 🔹 get role from server
-
+useEffect(() => {
+  if (!isLoading) {
+    // Employee trying to access HR dashboard root
+    if (userRole === "employee" && location.pathname === "/hr-dashboard") {
+      navigate("/hr-dashboard/em-dashboard", { replace: true });
+    }
+  }
+}, [userRole, isLoading, location.pathname, navigate]);
   // loading handle
 if (isLoading) {
   return (
@@ -28,20 +35,22 @@ if (isLoading) {
   );
 }
 
+
   const MenuItems = [
-    { icon: Home, label: "Asset List", path: "/dashboard", role: "hr" },
-    { icon: Plus, label: "Add Asset", path: "/dashboard/add-asset", role: "hr" },
-    { icon: FileText, label: "All Requests", path: "/dashboard/all-requests", role: "hr" },
-    { icon: Users, label: "Employee List", path: "/dashboard/employee-list", role: "hr" },
-    { icon: Crown, label: "Upgrade Package", path: "/dashboard/upgrade-package", role: "hr" },
-    { icon: User, label: "Profile", path: "/dashboard/profile", role: "hr" },
+  // HR
+  { icon: Home, label: "Asset List", path: "/hr-dashboard", role: "hr" },
+  { icon: Plus, label: "Add Asset", path: "/hr-dashboard/add-asset", role: "hr" },
+  { icon: FileText, label: "All Requests", path: "/hr-dashboard/all-requests", role: "hr" },
+  { icon: Users, label: "Employee List", path: "/hr-dashboard/employee-list", role: "hr" },
+  { icon: Crown, label: "Upgrade Package", path: "/hr-dashboard/upgrade-package", role: "hr" },
+  { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "hr" },
 
-    { icon: Package, label: "My Assets", path: "/dashboard/my-assets", role: "employee" },
-    { icon: Plus, label: "Request Asset", path: "/dashboard/request-asset", role: "employee" },
-    { icon: Users, label: "My Team", path: "/dashboard/my-team", role: "employee" },
-    { icon: User, label: "Profile", path: "/dashboard/profile", role: "employee" },
-  ];
-
+  // Employee
+  { icon: Package, label: "My Assets", path: "/hr-dashboard/em-dashboard", role: "employee" },
+  { icon: Plus, label: "Request Asset", path: "/hr-dashboard/request-asset", role: "employee" },
+  { icon: Users, label: "My Team", path: "/hr-dashboard/my-team", role: "employee" },
+  { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "employee" },
+];
   const filteredMenuItems = MenuItems.filter(item => item.role === userRole);
 
   return (
@@ -121,7 +130,7 @@ if (isLoading) {
         </header>
 
         {/* OUTLET */}
-        <div className="p-6">
+        <div className="">
           <Outlet />
         </div>
       </main>

@@ -66,7 +66,7 @@ export const router = createBrowserRouter ([
         ]
     },
     {
-        path:"/dashboard",
+        path:"/hr-dashboard",
         Component: DashboardLayout,
         children: [
             {
@@ -94,7 +94,7 @@ export const router = createBrowserRouter ([
                 Component: Profile
             },
             {
-                path: 'my-assets',
+                path: 'em-dashboard',
                 Component: MyAssets
             },
             {

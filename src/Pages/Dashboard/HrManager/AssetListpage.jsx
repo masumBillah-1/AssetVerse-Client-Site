@@ -90,7 +90,7 @@ const AssetListPage = () => {
   const assetsPage = filteredAssets.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-10">
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
