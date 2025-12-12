@@ -106,11 +106,7 @@ const MyAssets = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#06393a] mb-2">My Assets</h1>
-          <p className="text-gray-600">View and manage your requested assets</p>
-        </div>
+
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
