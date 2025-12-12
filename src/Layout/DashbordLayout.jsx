@@ -16,13 +16,20 @@ export default function DashboardLayout() {
   const [mongoUser, setMongoUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
 
+
   const navigate = useNavigate();
   const location = useLocation();
   const axios = useAxios();
 
   const { user } = useAuth(); // Firebase user
   const { role: userRole, isLoading } = useRole();
-
+useEffect(() => {
+  if (user?.email) {
+    axios.get(`/users/${user.email}`).then(({ data }) => {
+      if (data.success) setMongoUser(data.user);
+    });
+  }
+}, [user?.email]);
   // 🔥 Fetch MongoDB user data
   useEffect(() => {
     const fetchMongoUser = async () => {
@@ -150,10 +157,10 @@ export default function DashboardLayout() {
               
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                  src={user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
-                  alt="profile"
-                  className="w-full h-full object-cover"
-                />
+                src={mongoUser?.photoURL || user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
+                alt="profile"
+                className="w-full h-full object-cover"
+              />
               </div>
             </div>
           </div>
