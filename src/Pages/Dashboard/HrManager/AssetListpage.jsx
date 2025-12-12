@@ -12,22 +12,33 @@ const AssetListPage = () => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [assignedCount, setAssignedCount] = useState(0);
 
   const pageSize = 10;
 
-  useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        const res = await axiosSecure.get('/assets');
-        setAssets(res.data || []);
-        setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
-      } catch (err) {
-        console.error(err);
-        Swal.fire("Error", "Poor Network 🛜", "error");
-      }
-    };
-    fetchAssets();
-  }, []);
+useEffect(() => {
+  const fetchAssets = async () => {
+    try {
+      const res = await axiosSecure.get('/assets');
+      setAssets(res.data || []);
+      setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
+
+      // Pending Count
+      const pendingRes = await axiosSecure.get("/requests/pending-count");
+      setPendingCount(pendingRes.data.pending);
+
+      // Assigned Count
+      const assignedRes = await axiosSecure.get("/requests/assigned-count");
+      setAssignedCount(assignedRes.data.assigned);
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Poor Network 🛜", "error");
+    }
+  };
+  fetchAssets();
+}, []);
 
   const deleteAsset = async (id) => {
     try {
@@ -51,6 +62,10 @@ const AssetListPage = () => {
       Swal.fire("Error", "Failed to delete asset", "error");
     }
   };
+
+
+
+
 
   // Print single asset slip
   const handlePrint = (asset) => {
@@ -96,8 +111,9 @@ const AssetListPage = () => {
         {[
           { label: "Total Assets", value: String(assets.length), icon: Package },
           { label: "Available", value: String(assets.filter(a => a.status === "available").length), icon: CheckCircle },
-          { label: "Assigned", value: String(assets.filter(a => a.status === "assigned").length), icon: Users },
-          { label: "Requests", value: "0", icon: FileText }
+          { label: "Assigned", value: assignedCount, icon: Users },
+          { label: "Requests", value: pendingCount, icon: FileText }
+
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[var(--primary)]/10 hover:shadow-xl transition">
             <div className="flex items-center justify-between mb-2">

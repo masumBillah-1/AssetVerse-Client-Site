@@ -119,11 +119,8 @@ const RequestAsset = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#06393a] mb-2">Request Asset</h1>
-          <p className="text-gray-600">Browse and request available assets for your work</p>
-        </div>
+
+
 
         {/* Filter Tabs */}
         <div className="bg-white rounded-2xl shadow-lg p-2 mb-6 inline-flex gap-2">
@@ -175,16 +172,16 @@ const RequestAsset = () => {
               >
                 {/* Asset Image */}
                 <div className="w-full h-32 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-[#06393a]/10">
-                  {asset.assetImage && asset.assetImage.startsWith('data:image') ? (
-                    <img 
-                      src={asset.assetImage} 
-                      alt={asset.assetName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-4xl">{asset.assetImage || '📦'}</span>
-                  )}
-                </div>
+  {asset.assetImage ? (
+    <img 
+      src={asset.assetImage} 
+      alt={asset.assetName}
+      className="w-full h-full object-contain"  // ← এখানে পরিবর্তন
+    />
+  ) : (
+    <span className="text-4xl">📦</span>
+  )}
+</div>
 
                 {/* Asset Info */}
                 <h3 className="text-lg font-bold text-[#06393a] mb-2 truncate">{asset.assetName}</h3>
@@ -234,13 +231,17 @@ const RequestAsset = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-slideUp">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-[#06393a]/20">
-                <span className="text-3xl">
-                  {selectedAsset?.assetImage && !selectedAsset.assetImage.startsWith('data:image') 
-                    ? selectedAsset.assetImage 
-                    : '📦'}
-                </span>
-              </div>
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-[#06393a]/20 overflow-hidden">
+  {selectedAsset?.assetImage ? (
+    <img 
+      src={selectedAsset.assetImage} 
+      alt={selectedAsset.assetName}
+      className="w-full h-full object-contain rounded-full"  // ← object-contain ব্যবহার
+    />
+  ) : (
+    <span className="text-3xl">📦</span>
+  )}
+</div>
               <h3 className="text-2xl font-bold text-[#06393a] mb-2">Request Asset</h3>
               <p className="text-gray-600">
                 Asset: <span className="font-bold text-[#06393a]">{selectedAsset?.assetName}</span>

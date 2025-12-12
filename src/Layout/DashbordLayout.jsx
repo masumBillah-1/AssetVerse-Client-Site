@@ -1,56 +1,85 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
+import { Menu, CheckCircle, AlertCircle, Clock, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import useRole from "../Hooks/useRole";
 import useAuth from "../Hooks/useAuth";
-
-
+import NotificationComponent from "../Components/Notification";
+import useAxios from "../Hooks/useAxios"; // 🔥 Import করুন
 
 export default function DashboardLayout() {
   const PRIMARY = "#063A3A";
   const ACCENT = "#CBDCBD";
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // 🔥 MongoDB user data state
+  const [mongoUser, setMongoUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+
   const navigate = useNavigate();
   const location = useLocation();
+  const axios = useAxios();
 
-  const { user } = useAuth();
-  const { role: userRole, isLoading } = useRole(); // 🔹 get role from server
-useEffect(() => {
-  if (!isLoading) {
-    // Employee trying to access HR dashboard root
-    if (userRole === "employee" && location.pathname === "/hr-dashboard") {
-      navigate("/hr-dashboard/em-dashboard", { replace: true });
+  const { user } = useAuth(); // Firebase user
+  const { role: userRole, isLoading } = useRole();
+
+  // 🔥 Fetch MongoDB user data
+  useEffect(() => {
+    const fetchMongoUser = async () => {
+      if (user?.email) {
+        try {
+          setUserLoading(true);
+          const { data } = await axios.get(`/users/${user.email}`);
+          if (data.success) {
+            setMongoUser(data.user);
+            console.log('✅ MongoDB User loaded:', data.user);
+          }
+        } catch (error) {
+          console.error('❌ Error fetching MongoDB user:', error);
+        } finally {
+          setUserLoading(false);
+        }
+      }
+    };
+
+    fetchMongoUser();
+  }, [user?.email, axios]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (userRole === "employee" && location.pathname === "/hr-dashboard") {
+        navigate("em-dashboard", { replace: true });
+      }
     }
-  }
-}, [userRole, isLoading, location.pathname, navigate]);
-  // loading handle
-if (isLoading) {
-  return (
-    <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center">
-        <Package className="w-10 h-10 text-[var(--primary)] animate-spin" />
-      </div>
-    </div>
-  );
-}
+  }, [userRole, isLoading, location.pathname, navigate]);
 
+  // Loading state
+  if (isLoading || userLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center">
+          <Package className="w-10 h-10 text-[var(--primary)] animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   const MenuItems = [
-  // HR
-  { icon: Home, label: "Asset List", path: "/hr-dashboard", role: "hr" },
-  { icon: Plus, label: "Add Asset", path: "/hr-dashboard/add-asset", role: "hr" },
-  { icon: FileText, label: "All Requests", path: "/hr-dashboard/all-requests", role: "hr" },
-  { icon: Users, label: "Employee List", path: "/hr-dashboard/employee-list", role: "hr" },
-  { icon: Crown, label: "Upgrade Package", path: "/hr-dashboard/upgrade-package", role: "hr" },
-  { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "hr" },
+    // HR
+    { icon: Home, label: "Asset List", path: "/hr-dashboard", role: "hr" },
+    { icon: Plus, label: "Add Asset", path: "/hr-dashboard/add-asset", role: "hr" },
+    { icon: FileText, label: "All Requests", path: "/hr-dashboard/all-requests", role: "hr" },
+    { icon: Users, label: "Employee List", path: "/hr-dashboard/employee-list", role: "hr" },
+    { icon: Crown, label: "Upgrade Package", path: "/hr-dashboard/upgrade-package", role: "hr" },
+    { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "hr" },
 
-  // Employee
-  { icon: Package, label: "My Assets", path: "/hr-dashboard/em-dashboard", role: "employee" },
-  { icon: Plus, label: "Request Asset", path: "/hr-dashboard/request-asset", role: "employee" },
-  { icon: Users, label: "My Team", path: "/hr-dashboard/my-team", role: "employee" },
-  { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "employee" },
-];
+    // Employee
+    { icon: Package, label: "My Assets", path: "/hr-dashboard/em-dashboard", role: "employee" },
+    { icon: Plus, label: "Request Asset", path: "/hr-dashboard/request-asset", role: "employee" },
+    { icon: Users, label: "My Team", path: "/hr-dashboard/my-team", role: "employee" },
+    { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "employee" },
+  ];
+  
   const filteredMenuItems = MenuItems.filter(item => item.role === userRole);
 
   return (
@@ -114,15 +143,16 @@ if (isLoading) {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 hover:bg-gray-100 rounded-lg">
-                <Bell className="w-6 h-6 text-[var(--primary)]" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              {/* 🔥 Notifications - MongoDB _id pass করা হচ্ছে */}
+              {mongoUser && (
+                <NotificationComponent userId={mongoUser._id} />
+              )}
+              
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                    src={user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
-                    alt="profile"
-                    className="w-full h-full object-cover"
+                  src={user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
+                  alt="profile"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>

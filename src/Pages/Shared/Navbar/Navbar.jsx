@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Package, Menu, X,} from 'lucide-react';
 import { Link } from 'react-router';
 import useAuth from '../../../Hooks/useAuth';
+import useRole from '../../../Hooks/useRole';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,6 +10,8 @@ const Navbar = () => {
   const [active, setActive] = useState('home');
 
   const  {user, logOut} = useAuth();
+
+   const { role: userRole } = useRole();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -79,13 +82,34 @@ const Navbar = () => {
 
             <div className="w-px h-6 bg-[#CBDCBD]/30 mx-2"></div>
 
-            <button className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Join as Employee
-            </button>
 
-            <button className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Join as HR
-            </button>
+           {user ? (
+  <Link
+    to={userRole === "hr" ? "/hr-dashboard" : "/hr-dashboard/em-dashboard"}
+    className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+  >
+    Dashboard
+  </Link>
+) : (
+  <>
+    <Link
+      className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+    >
+      Join as Employee
+    </Link>
+
+    <Link
+      to="/login"
+      className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+    >
+      Join as HR
+    </Link>
+  </>
+)}
+
+
+
+
 
             
               {

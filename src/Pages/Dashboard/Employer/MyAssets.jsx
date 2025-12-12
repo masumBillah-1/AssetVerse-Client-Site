@@ -198,16 +198,16 @@ const MyAssets = () => {
               >
                 {/* Asset Image */}
                 <div className="w-full h-36 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-4 overflow-hidden border border-[#06393a]/10">
-                  {asset.assetImage && asset.assetImage.startsWith('data:image') ? (
-                    <img 
-                      src={asset.assetImage} 
-                      alt={asset.assetName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-5xl">{asset.assetImage || '📦'}</span>
-                  )}
-                </div>
+  {asset.assetImage ? (
+    <img 
+      src={asset.assetImage} 
+      alt={asset.assetName}
+      className="w-full h-full object-contain"  // ← crop না হোক
+    />
+  ) : (
+    <span className="text-5xl">📦</span>
+  )}
+</div>
 
                 {/* Asset Info */}
                 <h3 className="text-xl font-bold text-[#06393a] mb-2">{asset.assetName}</h3>
@@ -263,13 +263,6 @@ const MyAssets = () => {
                   )}
                 </div>
 
-                {/* Note Section */}
-                {asset.note && (
-                  <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-gray-600 mb-1 font-semibold">Request Note:</p>
-                    <p className="text-sm text-gray-700">{asset.note}</p>
-                  </div>
-                )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
