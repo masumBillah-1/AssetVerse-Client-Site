@@ -186,40 +186,42 @@ const MyAssets = () => {
             <p className="text-gray-500">You haven't requested any assets yet.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredAssets.map((asset) => (
               <div
                 key={asset._id}
-                className="bg-white rounded-xl p-5 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 {/* Asset Image */}
-                <div className="w-full h-36 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-4 overflow-hidden border border-[#06393a]/10">
-  {asset.assetImage ? (
-    <img 
-      src={asset.assetImage} 
-      alt={asset.assetName}
-      className="w-full h-full object-contain"  // ← crop না হোক
-    />
-  ) : (
-    <span className="text-5xl">📦</span>
-  )}
-</div>
+                <div className="w-full h-28 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-[#06393a]/10">
+                  {asset.assetImage ? (
+                    <img 
+                      src={asset.assetImage} 
+                      alt={asset.assetName}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-4xl">📦</span>
+                  )}
+                </div>
 
                 {/* Asset Info */}
-                <h3 className="text-xl font-bold text-[#06393a] mb-2">{asset.assetName}</h3>
+                <h3 className="text-base font-bold text-[#06393a] mb-2 truncate" title={asset.assetName}>
+                  {asset.assetName}
+                </h3>
                 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-1.5 mb-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Type:</span>
-                    <span className="px-3 py-1 bg-[#06393a]/10 text-[#06393a] rounded-full text-xs font-semibold capitalize">
+                    <span className="text-xs text-gray-600">Type:</span>
+                    <span className="px-2 py-0.5 bg-[#06393a]/10 text-[#06393a] rounded-full text-xs font-semibold capitalize">
                       {asset.assetType}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="text-xs text-gray-600">Status:</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                         asset.requestStatus === "approved"
                           ? "bg-emerald-100 text-emerald-700"
                           : asset.requestStatus === "pending"
@@ -234,45 +236,53 @@ const MyAssets = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Requested:</span>
+                    <span className="text-xs text-gray-600">Requested:</span>
                     <span className="text-xs font-semibold text-gray-700">
-                      {new Date(asset.requestDate).toLocaleDateString()}
+                      {new Date(asset.requestDate).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric'
+                      })}
                     </span>
                   </div>
 
                   {asset.approvalDate && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Approved:</span>
+                      <span className="text-xs text-gray-600">Approved:</span>
                       <span className="text-xs font-semibold text-gray-700">
-                        {new Date(asset.approvalDate).toLocaleDateString()}
+                        {new Date(asset.approvalDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
                       </span>
                     </div>
                   )}
 
                   {asset.returnDate && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Returned:</span>
+                      <span className="text-xs text-gray-600">Returned:</span>
                       <span className="text-xs font-semibold text-gray-700">
-                        {new Date(asset.returnDate).toLocaleDateString()}
+                        {new Date(asset.returnDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
                       </span>
                     </div>
                   )}
                 </div>
-
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                   {asset.requestStatus === "approved" && (
                     <button
                       onClick={() => handleReturn(asset._id)}
-                      className="flex-1 py-2.5 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition-all"
+                      className="btn btn-sm flex-1 bg-orange-500 text-white border-none hover:bg-orange-600 transition-all text-xs"
                     >
                       Return
                     </button>
                   )}
                   <button
                     onClick={() => handlePrint(asset)}
-                    className="flex-1 py-2.5 bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 transition-all"
+                    className="btn btn-sm flex-1 bg-[#06393a] text-white border-none hover:bg-[#06393a]/90 transition-all text-xs"
                   >
                     Print
                   </button>

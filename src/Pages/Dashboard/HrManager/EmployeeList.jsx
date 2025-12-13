@@ -8,23 +8,55 @@ const EmployeeList = () => {
   const axiosPublic = useAxios();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // -------------------------------------------------
-  //   Load all employees (role = employee)
+  //   Load current HR user
+  // -------------------------------------------------
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const userEmail = localStorage.getItem('userEmail'); // Or from auth context
+        const response = await axiosPublic.get(`/users/${userEmail}`);
+        setCurrentUser(response.data.user);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [axiosPublic]);
+
+  // -------------------------------------------------
+  //   Load employees of current HR's company
   // -------------------------------------------------
   useEffect(() => {
     const fetchEmployees = async () => {
+      if (!currentUser) return;
+
       try {
-        const res = await axiosPublic.get("/employees");
-        setEmployees(res.data);
+        // Get company ID (HR's _id)
+        const companyId = currentUser.role === 'hr' ? currentUser._id : null;
+
+        if (!companyId) {
+          console.error('Company ID not found');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch only employees affiliated with this company
+        const res = await axiosPublic.get(`/employees/company/${companyId}`);
+        setEmployees(res.data.employees || []);
       } catch (error) {
-        console.log(error);
+        console.error('Error fetching employees:', error);
       }
       setLoading(false);
     };
 
-    fetchEmployees();
-  }, [axiosPublic]);
+    if (currentUser) {
+      fetchEmployees();
+    }
+  }, [axiosPublic, currentUser]);
 
   // -------------------------------------------------
   //   Remove Employee Function
@@ -61,9 +93,10 @@ const EmployeeList = () => {
   // -------------------------------------------------
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
-        <p>Loading employees...</p>
-      </div>
+     <div className="text-center py-12 min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#06393a' }}></div>
+          <p className="mt-4 text-gray-600">Loading ...</p>
+        </div>
     );
   }
 
@@ -73,7 +106,7 @@ const EmployeeList = () => {
   return (
     <div className="bg-white rounded-2xl p-6 shadow-lg">
       <h3 className="text-xl font-bold text-[var(--primary)] mb-4 flex items-center">
-        <Users className="w-5 h-5 mr-2" /> Employees
+        <Users className="w-5 h-5 mr-2" /> My Team Members ({employees.length})
       </h3>
 
       <div className="space-y-3">
@@ -84,7 +117,7 @@ const EmployeeList = () => {
           >
             <div className="flex items-center space-x-4">
               <img
-                src={e.photoURL}
+                src={e.photoURL || 'https://via.placeholder.com/150'}
                 alt="profile"
                 className="w-12 h-12 rounded-full object-cover"
               />
@@ -101,7 +134,7 @@ const EmployeeList = () => {
 
               <button
                 onClick={() => removeEmployee(e._id)}
-                className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm font-semibold"
+                className="btn btn-sm bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors"
               >
                 Remove
               </button>
@@ -110,7 +143,7 @@ const EmployeeList = () => {
         ))}
 
         {employees.length === 0 && (
-          <p className="text-center text-gray-500">No Employees Found</p>
+          <p className="text-center text-gray-500">No Employees Found in Your Company</p>
         )}
       </div>
     </div>

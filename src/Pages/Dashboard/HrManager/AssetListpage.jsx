@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Package, FileText, Users, Search, Trash2, CheckCircle, Printer } from "lucide-react";
-import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import Swal from 'sweetalert2';
 
+import Swal from 'sweetalert2';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import useAuth from '../../../Hooks/useAuth';
+// Add this import
 
 const AssetListPage = () => {
   const axiosSecure = useAxiosSecure();
-
+  const { user } = useAuth(); // Add this
 
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState('');
@@ -17,28 +19,53 @@ const AssetListPage = () => {
 
   const pageSize = 10;
 
-useEffect(() => {
-  const fetchAssets = async () => {
-    try {
-      const res = await axiosSecure.get('/assets');
-      setAssets(res.data || []);
-      setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
+  useEffect(() => {
+    const fetchAssets = async () => {
+      if (!user?.email) return; // Add this check
 
-      // Pending Count
-      const pendingRes = await axiosSecure.get("/requests/pending-count");
-      setPendingCount(pendingRes.data.pending);
+      try {
+        // Get user data to find their _id
+        const userRes = await axiosSecure.get(`/users/${user.email}`);
+        const currentUser = userRes.data.user;
 
-      // Assigned Count
-      const assignedRes = await axiosSecure.get("/requests/assigned-count");
-      setAssignedCount(assignedRes.data.assigned);
+        // Determine companyId
+        let companyId;
+        if (currentUser.role === "hr") {
+          companyId = currentUser._id;
+        } else if (currentUser.role === "employee") {
+          companyId = currentUser.affiliatedCompanies?.[0];
+        }
 
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Poor Network 🛜", "error");
-    }
-  };
-  fetchAssets();
-}, []);
+        // Fetch assets with companyId filter
+        const res = await axiosSecure.get('/assets', {
+          params: { companyId: companyId }
+        });
+        
+        setAssets(res.data || []);
+        setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
+
+        // ✅ Fetch ALL requests for this company
+        const requestsRes = await axiosSecure.get('/requests', {
+          params: { companyId: companyId }
+        });
+        
+        const allRequests = requestsRes.data || [];
+        
+        // ✅ Count pending requests for this company
+        const pendingRequestsCount = allRequests.filter(req => req.requestStatus === 'pending').length;
+        setPendingCount(pendingRequestsCount);
+
+        // ✅ Count assigned/approved requests for this company
+        const assignedRequestsCount = allRequests.filter(req => req.requestStatus === 'approved').length;
+        setAssignedCount(assignedRequestsCount);
+
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "Poor Network 🛜", "error");
+      }
+    };
+    fetchAssets();
+  }, [user?.email, axiosSecure]); // Updated dependencies
 
   const deleteAsset = async (id) => {
     try {
@@ -62,10 +89,6 @@ useEffect(() => {
       Swal.fire("Error", "Failed to delete asset", "error");
     }
   };
-
-
-
-
 
   // Print single asset slip
   const handlePrint = (asset) => {
@@ -105,7 +128,7 @@ useEffect(() => {
   const assetsPage = filteredAssets.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="space-y-6 p-10">
+    <div className="space-y-6 p-5">
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[

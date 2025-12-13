@@ -15,6 +15,10 @@ const MyTeam = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [hrInfo, setHrInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // ✅ NEW: Multi-company support
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [companyOptions, setCompanyOptions] = useState([]);
 
   // Fetch MongoDB user data
   useEffect(() => {
@@ -24,6 +28,11 @@ const MyTeam = () => {
           const { data } = await axios.get(`/users/${user.email}`);
           if (data.success) {
             setMongoUser(data.user);
+            
+            // ✅ Set default company (first one)
+            if (data.user.affiliatedCompanies?.length > 0) {
+              setSelectedCompanyId(data.user.affiliatedCompanies[0]);
+            }
           }
         } catch (error) {
           console.error('Error fetching user:', error);
@@ -33,22 +42,57 @@ const MyTeam = () => {
     fetchUserData();
   }, [user?.email, axios]);
 
-  // Fetch team members based on user's company
+  // ✅ Fetch all company options (HR info for each affiliated company)
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchCompanyOptions = async () => {
       if (mongoUser?.affiliatedCompanies?.length > 0) {
         try {
-          setLoading(true);
-          const companyEmail = mongoUser.affiliatedCompanies[0];
+          const options = await Promise.all(
+            mongoUser.affiliatedCompanies.map(async (companyId) => {
+              try {
+                // Fetch HR by _id (companyId)
+                const { data } = await axios.get(`/users/by-id/${companyId}`);
+                if (data.success) {
+                  return {
+                    id: companyId,
+                    name: data.user.companyName,
+                    logo: data.user.companyLogo
+                  };
+                }
+              } catch (err) {
+                console.error(`Error fetching company ${companyId}:`, err);
+              }
+              return null;
+            })
+          );
+          
+          setCompanyOptions(options.filter(Boolean));
+        } catch (error) {
+          console.error('Error fetching company options:', error);
+        }
+      }
+    };
 
-          // Fetch company HR info
-          const { data: hrData } = await axios.get(`/users/${companyEmail}`);
+    if (mongoUser) {
+      fetchCompanyOptions();
+    }
+  }, [mongoUser, axios]);
+
+  // Fetch team members based on selected company
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      if (selectedCompanyId) {
+        try {
+          setLoading(true);
+
+          // Fetch HR info by companyId (HR's _id)
+          const { data: hrData } = await axios.get(`/users/by-id/${selectedCompanyId}`);
           if (hrData.success) {
             setHrInfo(hrData.user);
           }
 
-          // Fetch all team members (HR + Employees)
-          const { data: membersData } = await axios.get(`/employees/company/${companyEmail}`);
+          // Fetch all employees in this company
+          const { data: membersData } = await axios.get(`/employees/company/${selectedCompanyId}`);
           if (membersData.success) {
             // Include HR in the team
             const allMembers = [hrData.user, ...membersData.employees];
@@ -64,10 +108,10 @@ const MyTeam = () => {
       }
     };
 
-    if (mongoUser) {
+    if (selectedCompanyId) {
       fetchTeamData();
     }
-  }, [mongoUser, axios]);
+  }, [selectedCompanyId, axios]);
 
   // Calculate upcoming birthdays
   const getUpcomingBirthdays = () => {
@@ -99,7 +143,7 @@ const MyTeam = () => {
 
   const upcomingBirthdays = getUpcomingBirthdays();
 
-  if (loading) {
+  if (loading && !mongoUser) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#063A3A]"></div>
@@ -121,6 +165,26 @@ const MyTeam = () => {
 
   return (
     <div className="p-6 space-y-6" style={{ ['--primary']: PRIMARY, ['--accent']: ACCENT }}>
+      {/* ✅ Company Selector - Only show if multiple companies */}
+      {companyOptions.length > 1 && (
+        <div className="bg-white rounded-2xl shadow-lg p-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Select Company
+          </label>
+          <select
+            value={selectedCompanyId}
+            onChange={(e) => setSelectedCompanyId(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[var(--primary)] focus:outline-none text-gray-800 font-medium"
+          >
+            {companyOptions.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Company Info Card */}
       <div className="bg-gradient-to-r from-[var(--primary)] to-teal-600 rounded-2xl p-6 shadow-lg text-white">
         <div className="flex items-center justify-between">
@@ -186,7 +250,11 @@ const MyTeam = () => {
           Team Members
         </h3>
 
-        {teamMembers.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)] mx-auto"></div>
+          </div>
+        ) : teamMembers.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <Users className="w-16 h-16 mx-auto mb-3 opacity-20" />
             <p>No team members found</p>
@@ -262,8 +330,8 @@ const MyTeam = () => {
         
         <div className="bg-white rounded-xl shadow-md p-6 text-center">
           <Building2 className="w-8 h-8 text-teal-600 mx-auto mb-2" />
-          <p className="text-3xl font-bold text-gray-800">1</p>
-          <p className="text-sm text-gray-600">Company</p>
+          <p className="text-3xl font-bold text-gray-800">{companyOptions.length}</p>
+          <p className="text-sm text-gray-600">{companyOptions.length === 1 ? 'Company' : 'Companies'}</p>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import useAxios from '../../../Hooks/useAxios';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router';
 
 
 const AllRequestsPage = () => {
@@ -8,15 +10,43 @@ const AllRequestsPage = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchRequests();
+    fetchCurrentUser();
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (currentUser) {
+      fetchRequests();
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const userEmail = localStorage.getItem('userEmail'); // Or from your auth context
+      const response = await axiosInstance.get(`/users/${userEmail}`);
+      setCurrentUser(response.data.user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
+
   const fetchRequests = async () => {
     try {
-      const response = await axiosInstance.get('/requests');
+      // Use companyId to filter requests
+      const companyId = currentUser.role === 'hr' ? currentUser._id : null;
+      
+      if (!companyId) {
+        console.error('Company ID not found');
+        setLoading(false);
+        return;
+      }
+
+      const response = await axiosInstance.get(`/requests?companyId=${companyId}`);
       setRequests(response.data);
       setLoading(false);
     } catch (error) {
@@ -25,33 +55,79 @@ const AllRequestsPage = () => {
     }
   };
 
-  const approveRequest = async (id) => {
-    try {
-      const response = await axiosInstance.patch(`/requests/${id}/approve`);
-      
-      if (response.data.success) {
-        fetchRequests();
-      }
-    } catch (error) {
-      console.error('Error approving request:', error);
-    }
-  };
-
-  const rejectRequest = async (id) => {
-    try {
-      const response = await axiosInstance.patch(`/requests/${id}`, { 
-        requestStatus: 'rejected',
-        rejectedAt: new Date()
+const approveRequest = async (id) => {
+  try {
+    const response = await axiosInstance.patch(`/requests/${id}/approve`);
+    
+    if (response.data.success) {
+      await fetchRequests(); // refresh the table
+      Swal.fire({
+        icon: 'success',
+        title: 'Approved!',
+        text: response.data.message || 'Request has been approved successfully.',
+        timer: 2000,
+        showConfirmButton: false
       });
-      
-      if (response.data) {
-        fetchRequests();
-      }
-    } catch (error) {
-      console.error('Error rejecting request:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error approving request:', error);
+    
+    // ✅ Check if package limit reached
+    if (error.response?.data?.limitReached) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Package Limit Reached!',
+        html: `
+          <p>${error.response.data.message}</p>
+          <p class="mt-2"><strong>Current: ${error.response.data.currentEmployees}/${error.response.data.packageLimit}</strong></p>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Upgrade Package',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#06393a',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // ✅ Auto redirect to upgrade page
+         navigate('/hr-dashboard/upgrade-package');
+        }
+      });
+    } else {
+      // Other errors
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed!',
+        text: error.response?.data?.message || 'Failed to approve the request.',
+      });
+    }
+  }
+};
 
+const rejectRequest = async (id) => {
+  try {
+    const response = await axiosInstance.patch(`/requests/${id}`, { 
+      requestStatus: 'rejected',
+      rejectedAt: new Date()
+    });
+    
+    if (response.data) {
+      await fetchRequests();
+      Swal.fire({
+        icon: 'success',
+        title: 'Rejected!',
+        text: 'Request has been rejected successfully.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  } catch (error) {
+    console.error('Error rejecting request:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed!',
+      text: error.response?.data?.message || 'Failed to reject the request.',
+    });
+  }
+};
   const filteredRequests = requests.filter(req => {
     if (filter === 'all') return true;
     return req.requestStatus === filter;

@@ -62,7 +62,7 @@ const PaymentSuccess = () => {
             showConfirmButton: false
           });
 
-          setTimeout(() => navigate('/dashboard/upgrade-package'), 2000);
+          setTimeout(() => navigate('/hr-dashboard/upgrade-package'), 2000);
         }
       } catch (err) {
         console.error('Payment save error:', err);

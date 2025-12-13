@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, CheckCircle, AlertCircle, Package, Clock, X } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, Package, Clock, Trash2, CheckCheck } from 'lucide-react';
 import useAxios from '../Hooks/useAxios';
 
 
@@ -15,6 +15,17 @@ const NotificationComponent = ({ userId }) => {
       fetchNotifications();
     }
   }, [userId]);
+
+  // ✅ Auto refresh notifications every 30 seconds when dropdown is open
+  useEffect(() => {
+    if (isOpen && userId) {
+      const interval = setInterval(() => {
+        fetchNotifications();
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [isOpen, userId]);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -33,15 +44,14 @@ const NotificationComponent = ({ userId }) => {
     }
   };
 
-  // ✅ Mark notification as read - এখন userId পাঠাচ্ছে
+  // ✅ Mark single notification as read
   const markAsRead = async (notificationId) => {
     try {
       const { data } = await axios.patch(`/notifications/${notificationId}/read`, {
-        userId: userId  // ✅ Backend এ userId পাঠানো হচ্ছে
+        userId: userId
       });
       
-      if (data.success) {
-        // ✅ Local state update - শুধু এই notification কে read করুন
+      if (data.success && !data.alreadyRead) {
         setNotifications(notifications.map(notif =>
           notif._id === notificationId ? { ...notif, read: true } : notif
         ));
@@ -52,8 +62,59 @@ const NotificationComponent = ({ userId }) => {
     }
   };
 
+  // ✅ Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const { data } = await axios.patch('/notifications/mark-all-read', {
+        userId: userId
+      });
+      
+      if (data.success) {
+        setNotifications(notifications.map(n => ({ ...n, read: true })));
+        console.log(`✅ ${data.totalMarked} notifications marked as read`);
+      }
+    } catch (error) {
+      console.error('❌ Error marking all as read:', error);
+    }
+  };
+
+  // ✅ Delete single notification
+  const deleteNotification = async (notificationId, e) => {
+    e.stopPropagation(); // Prevent triggering markAsRead
+    
+    try {
+      const { data } = await axios.delete(`/notifications/${notificationId}`, {
+        data: { userId: userId }
+      });
+      
+      if (data.success) {
+        setNotifications(notifications.filter(n => n._id !== notificationId));
+        console.log('✅ Notification deleted');
+      }
+    } catch (error) {
+      console.error('❌ Error deleting notification:', error);
+    }
+  };
+
+  // ✅ Clear all read notifications
+  const clearReadNotifications = async () => {
+    try {
+      const { data } = await axios.delete('/notifications/clear-read', {
+        data: { userId: userId }
+      });
+      
+      if (data.success) {
+        setNotifications(notifications.filter(n => !n.read));
+        console.log(`✅ ${data.totalCleared} notifications cleared`);
+      }
+    } catch (error) {
+      console.error('❌ Error clearing notifications:', error);
+    }
+  };
+
   // Unread count
   const unreadCount = notifications.filter(n => !n.read).length;
+  const hasReadNotifications = notifications.some(n => n.read);
 
   // Format date
   const formatDate = (dateString) => {
@@ -122,6 +183,30 @@ const NotificationComponent = ({ userId }) => {
               </div>
             </div>
 
+            {/* Action Buttons */}
+            {notifications.length > 0 && (
+              <div className="flex gap-2 p-3 bg-gray-50 border-b border-gray-100">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#06393a] hover:bg-[#06393a]/90 text-white text-xs font-semibold rounded-lg transition-all"
+                  >
+                    <CheckCheck className="w-3.5 h-3.5" />
+                    Mark all read
+                  </button>
+                )}
+                {hasReadNotifications && (
+                  <button
+                    onClick={clearReadNotifications}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear read
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Notifications List */}
             <div className="max-h-96 overflow-y-auto">
               {loading ? (
@@ -138,7 +223,7 @@ const NotificationComponent = ({ userId }) => {
                   <div 
                     key={notification._id}
                     onClick={() => !notification.read && markAsRead(notification._id)}
-                    className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                    className={`p-4 border-b border-gray-100 cursor-pointer transition-colors relative group ${
                       notification.read ? 'hover:bg-gray-50' : 'hover:bg-[#06393a]/5 bg-blue-50/30'
                     }`}
                   >
@@ -154,9 +239,18 @@ const NotificationComponent = ({ userId }) => {
                           {formatDate(notification.date)}
                         </span>
                       </div>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        )}
+                        <button
+                          onClick={(e) => deleteNotification(notification._id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 rounded-lg transition-all"
+                          title="Delete notification"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
