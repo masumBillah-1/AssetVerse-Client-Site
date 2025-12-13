@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../../../Hooks/useAuth';
 import useAxios from '../../../Hooks/useAxios';
+import Swal from 'sweetalert2';
 
 const RequestAsset = () => {
   const axiosPublic = useAxios();
@@ -92,14 +93,30 @@ const RequestAsset = () => {
         )
       );
 
-      alert("✅ Request sent successfully!");
+      // ✅ SweetAlert success message
+      Swal.fire({
+        icon: 'success',
+        title: 'Request Sent!',
+        text: 'Your asset request has been sent successfully.',
+        confirmButtonColor: '#06393a',
+        confirmButtonText: 'OK'
+      });
+
       setShowModal(false);
       setNote("");
       setSelectedAsset(null);
 
     } catch (error) {
       console.error("❌ Failed to send request:", error);
-      alert("❌ Request failed! Please try again.");
+      
+      // ✅ SweetAlert error message
+      Swal.fire({
+        icon: 'error',
+        title: 'Request Failed',
+        text: 'Failed to send request. Please try again.',
+        confirmButtonColor: '#06393a',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setSubmitting(false);
     }
@@ -144,7 +161,7 @@ const RequestAsset = () => {
           <select
             value={selectedCompanyId}
             onChange={(e) => setSelectedCompanyId(e.target.value)}
-            className="w-full md:w-96 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#06393a] focus:outline-none transition-colors font-semibold text-[#06393a]"
+            className="w-full select select-lg md:w-96 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#06393a] focus:outline-none transition-colors font-semibold text-[#06393a]"
           >
             <option value="all">All Companies</option>
             {companies.map((company) => (
@@ -268,7 +285,7 @@ const RequestAsset = () => {
                 {/* Request Button */}
                 <button
                   onClick={() => handleRequestClick(asset)}
-                  className="w-full py-2.5 bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 hover:shadow-lg transition-all duration-300"
+                  className="w-full py-2.5 cursor-pointer bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 hover:shadow-lg transition-all duration-300"
                 >
                   Request Asset
                 </button>
@@ -320,20 +337,21 @@ const RequestAsset = () => {
                   setNote("");
                   setSelectedAsset(null);
                 }}
-                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+                disabled={submitting}
+                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitRequest}
-                disabled={!note.trim()}
-                className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                  note.trim()
+                disabled={!note.trim() || submitting}
+                className={`flex-1 py-3 cursor-pointer rounded-xl font-semibold transition-all ${
+                  note.trim() && !submitting
                     ? "bg-[#06393a] text-white hover:bg-[#06393a]/90 hover:shadow-lg"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                Send Request
+                {submitting ? 'Sending...' : 'Send Request'}
               </button>
             </div>
           </div>

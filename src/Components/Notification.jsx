@@ -21,7 +21,7 @@ const NotificationComponent = ({ userId }) => {
     if (isOpen && userId) {
       const interval = setInterval(() => {
         fetchNotifications();
-      }, 30000); // 30 seconds
+      }, 3000); // 30 seconds
 
       return () => clearInterval(interval);
     }

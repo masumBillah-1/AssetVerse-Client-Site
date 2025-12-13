@@ -21,7 +21,7 @@ const PaymentSuccess = () => {
     
     if (!sessionId) {
       Swal.fire('Error', 'Invalid payment session', 'error');
-      navigate('/dashboard/upgrade-package');
+      navigate('/hr-dashboard/upgrade-package');
       return;
     }
 
