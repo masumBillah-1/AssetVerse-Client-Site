@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Package, FileText, Users, Search, Trash2, CheckCircle, Printer } from "lucide-react";
-
 import Swal from 'sweetalert2';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useAuth from '../../../Hooks/useAuth';
-// Add this import
+
+// Import Charts
+import ReturnableAssetsChart from './ReturnableAssetsChart';
+import TopRequestedAssetsChart from './TopRequestedAssetsChart';
 
 const AssetListPage = () => {
   const axiosSecure = useAxiosSecure();
-  const { user } = useAuth(); // Add this
+  const { user } = useAuth();
 
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState('');
@@ -16,12 +18,13 @@ const AssetListPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pendingCount, setPendingCount] = useState(0);
   const [assignedCount, setAssignedCount] = useState(0);
+  const [companyId, setCompanyId] = useState(null); // Add state for companyId
 
   const pageSize = 10;
 
   useEffect(() => {
     const fetchAssets = async () => {
-      if (!user?.email) return; // Add this check
+      if (!user?.email) return;
 
       try {
         // Get user data to find their _id
@@ -29,16 +32,18 @@ const AssetListPage = () => {
         const currentUser = userRes.data.user;
 
         // Determine companyId
-        let companyId;
+        let userCompanyId;
         if (currentUser.role === "hr") {
-          companyId = currentUser._id;
+          userCompanyId = currentUser._id;
         } else if (currentUser.role === "employee") {
-          companyId = currentUser.affiliatedCompanies?.[0];
+          userCompanyId = currentUser.affiliatedCompanies?.[0];
         }
+
+        setCompanyId(userCompanyId); // Store companyId for charts
 
         // Fetch assets with companyId filter
         const res = await axiosSecure.get('/assets', {
-          params: { companyId: companyId }
+          params: { companyId: userCompanyId }
         });
         
         setAssets(res.data || []);
@@ -46,7 +51,7 @@ const AssetListPage = () => {
 
         // ✅ Fetch ALL requests for this company
         const requestsRes = await axiosSecure.get('/requests', {
-          params: { companyId: companyId }
+          params: { companyId: userCompanyId }
         });
         
         const allRequests = requestsRes.data || [];
@@ -65,7 +70,7 @@ const AssetListPage = () => {
       }
     };
     fetchAssets();
-  }, [user?.email, axiosSecure]); // Updated dependencies
+  }, [user?.email, axiosSecure]);
 
   const deleteAsset = async (id) => {
     try {
@@ -136,7 +141,6 @@ const AssetListPage = () => {
           { label: "Available", value: String(assets.filter(a => a.status === "available").length), icon: CheckCircle },
           { label: "Assigned", value: assignedCount, icon: Users },
           { label: "Requests", value: pendingCount, icon: FileText }
-
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[var(--primary)]/10 hover:shadow-xl transition">
             <div className="flex items-center justify-between mb-2">
@@ -149,6 +153,14 @@ const AssetListPage = () => {
           </div>
         ))}
       </div>
+
+      {/* ✅ Charts Section - Added Here */}
+      {companyId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ReturnableAssetsChart companyId={companyId} />
+          <TopRequestedAssetsChart companyId={companyId} />
+        </div>
+      )}
 
       {/* Assets Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
