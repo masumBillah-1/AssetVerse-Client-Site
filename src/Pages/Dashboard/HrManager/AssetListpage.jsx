@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, FileText, Users, Search, Trash2, CheckCircle, Printer } from "lucide-react";
+import { Package, FileText, Users, Search, Trash2, CheckCircle, Printer, Edit } from "lucide-react";
 import Swal from 'sweetalert2';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useAuth from '../../../Hooks/useAuth';
@@ -7,6 +7,7 @@ import useAuth from '../../../Hooks/useAuth';
 // Import Charts
 import ReturnableAssetsChart from './ReturnableAssetsChart';
 import TopRequestedAssetsChart from './TopRequestedAssetsChart';
+import NotificationAnalytics from '../../../Components/NotificationAnalytics';
 
 const AssetListPage = () => {
   const axiosSecure = useAxiosSecure();
@@ -18,7 +19,16 @@ const AssetListPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pendingCount, setPendingCount] = useState(0);
   const [assignedCount, setAssignedCount] = useState(0);
-  const [companyId, setCompanyId] = useState(null); // Add state for companyId
+  const [companyId, setCompanyId] = useState(null);
+  
+  // Edit Modal States
+  const [editingAsset, setEditingAsset] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    assetName: '',
+    quantity: 0,
+    assetImage: ''
+  });
+  const [updating, setUpdating] = useState(false);
 
   const pageSize = 10;
 
@@ -39,7 +49,7 @@ const AssetListPage = () => {
           userCompanyId = currentUser.affiliatedCompanies?.[0];
         }
 
-        setCompanyId(userCompanyId); // Store companyId for charts
+        setCompanyId(userCompanyId);
 
         // Fetch assets with companyId filter
         const res = await axiosSecure.get('/assets', {
@@ -49,18 +59,18 @@ const AssetListPage = () => {
         setAssets(res.data || []);
         setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
 
-        // ✅ Fetch ALL requests for this company
+        // Fetch ALL requests for this company
         const requestsRes = await axiosSecure.get('/requests', {
           params: { companyId: userCompanyId }
         });
         
         const allRequests = requestsRes.data || [];
         
-        // ✅ Count pending requests for this company
+        // Count pending requests for this company
         const pendingRequestsCount = allRequests.filter(req => req.requestStatus === 'pending').length;
         setPendingCount(pendingRequestsCount);
 
-        // ✅ Count assigned/approved requests for this company
+        // Count assigned/approved requests for this company
         const assignedRequestsCount = allRequests.filter(req => req.requestStatus === 'approved').length;
         setAssignedCount(assignedRequestsCount);
 
@@ -92,6 +102,82 @@ const AssetListPage = () => {
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Failed to delete asset", "error");
+    }
+  };
+
+  // ✅ Open Edit Modal
+  const handleEditClick = (asset) => {
+    setEditingAsset(asset);
+    setEditFormData({
+      assetName: asset.assetName,
+      quantity: asset.quantity,
+      assetImage: asset.assetImage || ''
+    });
+    document.getElementById('edit_asset_modal').showModal();
+  };
+
+  // ✅ Handle Form Input Changes
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: name === 'quantity' ? Number(value) : value
+    }));
+  };
+
+  // ✅ Submit Updated Asset
+  const handleUpdateAsset = async () => {
+    if (!editFormData.assetName.trim() || editFormData.quantity < 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Input',
+        text: 'Please provide valid asset name and quantity.',
+        confirmButtonColor: '#06393a'
+      });
+      return;
+    }
+
+    setUpdating(true);
+
+    try {
+      const updateData = {
+        assetName: editFormData.assetName.trim(),
+        quantity: editFormData.quantity,
+        assetImage: editFormData.assetImage.trim(),
+        updatedAt: new Date()
+      };
+
+      await axiosSecure.patch(`/assets/${editingAsset._id}`, updateData);
+
+      // Update local state
+      setAssets(prev => prev.map(asset => 
+        asset._id === editingAsset._id 
+          ? { ...asset, ...updateData }
+          : asset
+      ));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: 'Asset has been updated successfully.',
+        confirmButtonColor: '#06393a'
+      });
+
+      // Close modal
+      document.getElementById('edit_asset_modal').close();
+      setEditingAsset(null);
+      setEditFormData({ assetName: '', quantity: 0, assetImage: '' });
+
+    } catch (err) {
+      console.error('Update error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: 'Failed to update asset. Please try again.',
+        confirmButtonColor: '#06393a'
+      });
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -154,13 +240,17 @@ const AssetListPage = () => {
         ))}
       </div>
 
-      {/* ✅ Charts Section - Added Here */}
+      {/* Charts Section */}
       {companyId && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ReturnableAssetsChart companyId={companyId} />
           <TopRequestedAssetsChart companyId={companyId} />
         </div>
       )}
+
+      <div>
+        <NotificationAnalytics companyId={companyId} />
+      </div>
 
       {/* Assets Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -194,7 +284,12 @@ const AssetListPage = () => {
             <tbody className="divide-y divide-gray-100">
               {assetsPage.map(asset => (
                 <tr key={asset._id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-2xl">{asset.assetImage ? <img src={asset.assetImage} className="w-10 h-10 object-contain" /> : "–"}</td>
+                  <td className="px-6 py-4 text-2xl">
+                    {asset.assetImage ? 
+                      <img src={asset.assetImage} className="w-10 h-10 object-contain" alt={asset.assetName} /> 
+                      : "–"
+                    }
+                  </td>
                   <td className="px-6 py-4">{asset.assetName}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${asset.returnType === "returnable" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
@@ -205,11 +300,32 @@ const AssetListPage = () => {
                   <td className="px-6 py-4">{new Date(asset.addedAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4">{asset.addedBy?.name || '-'}</td>
                   <td className="px-6 py-4 flex space-x-2">
-                    {asset.returnType === "returnable" && <button className="btn btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">Return</button>}
-                    <button onClick={() => handlePrint(asset)} className="btn btn-sm bg-[var(--primary)] text-white hover:opacity-90 transition flex items-center space-x-1">
+                    {/* ✅ Edit Button */}
+                    <button 
+                      onClick={() => handleEditClick(asset)} 
+                      className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600 transition flex items-center space-x-1"
+                      title="Edit Asset"
+                    >
+                      <Edit className="w-4 h-4" /> <span>Edit</span>
+                    </button>
+
+                    {asset.returnType === "returnable" && (
+                      <button className="btn btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
+                        Return
+                      </button>
+                    )}
+                    
+                    <button 
+                      onClick={() => handlePrint(asset)} 
+                      className="btn btn-sm bg-[var(--primary)] text-white hover:opacity-90 transition flex items-center space-x-1"
+                    >
                       <Printer className="w-4 h-4" /> <span>Print</span>
                     </button>
-                    <button onClick={() => deleteAsset(asset._id)} className="btn btn-sm bg-red-100 text-red-700 flex items-center space-x-1">
+                    
+                    <button 
+                      onClick={() => deleteAsset(asset._id)} 
+                      className="btn btn-sm bg-red-100 text-red-700 flex items-center space-x-1"
+                    >
                       <Trash2 className="w-4 h-4" /> <span>Delete</span>
                     </button>
                   </td>
@@ -227,6 +343,116 @@ const AssetListPage = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Edit Modal - DaisyUI */}
+      <dialog id="edit_asset_modal" className="modal">
+        <div className="modal-box md:max-w-3xl">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+
+          <div className="text-center mb-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Edit className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold text-[var(--primary)]">Edit Asset</h3>
+            <p className="text-sm text-gray-600">Update asset information</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Side - Image Preview */}
+            <div className="flex items-center justify-center">
+              <div className="w-full h-64 border-2 border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center p-4">
+                {editFormData.assetImage ? (
+                  <img 
+                    src={editFormData.assetImage} 
+                    alt="Preview" 
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : (
+                  <span className="text-gray-400 text-sm text-center">Image preview will appear here</span>
+                )}
+                <div style={{display: 'none'}} className="flex-col items-center justify-center text-gray-400 text-sm">
+                  <span>Invalid image URL</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Input Fields */}
+            <div className="space-y-3">
+              {/* Asset Name */}
+              <div>
+                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                  Asset Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="assetName"
+                  value={editFormData.assetName}
+                  onChange={handleEditInputChange}
+                  placeholder="Enter asset name"
+                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                />
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                  Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={editFormData.quantity}
+                  onChange={handleEditInputChange}
+                  min="0"
+                  placeholder="Enter quantity"
+                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                />
+              </div>
+
+              {/* Asset Image URL */}
+              <div>
+                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  name="assetImage"
+                  value={editFormData.assetImage}
+                  onChange={handleEditInputChange}
+                  placeholder="Enter image URL"
+                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-action mt-4">
+            <form method="dialog" className="flex gap-2 w-full">
+              <button 
+                type="button"
+                onClick={handleUpdateAsset}
+                disabled={!editFormData.assetName.trim() || updating}
+                className={`btn flex-1 ${
+                  editFormData.assetName.trim() && !updating
+                    ? "bg-[var(--primary)] text-white hover:opacity-90"
+                    : "btn-disabled"
+                }`}
+              >
+                {updating ? 'Updating...' : 'Update Asset'}
+              </button>
+              <button type="submit" className="btn btn-ghost" disabled={updating}>
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 };

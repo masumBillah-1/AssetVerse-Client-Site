@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import useAuth from "../../../Hooks/useAuth";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
+import useAuth from "../../../Hooks/useAuth";
 
 
 const Register = () => {
@@ -11,7 +11,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const {registerUser, signInGoogle} = useAuth();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   
   const selectedRole = watch("role");
 
@@ -128,7 +128,7 @@ const handleSignIn = () => {
                 name: gUser.displayName,
                 email: gUser.email,
                 photoURL: gUser.photoURL,
-                role: "employee", // Default (can be updated later)
+                role: "", // Empty role for new users
                 password: "",
                 dateOfBirth: "",
             };
@@ -150,7 +150,7 @@ const handleSignIn = () => {
             // 2️⃣ If NEW USER → save to server and go to role selection page
             if (!checkData.found) {
                 try {
-                    // Save new user to database with default role
+                    // Save new user to database without role
                     const saveRes = await fetch("http://localhost:3000/users", {
                         method: "POST",
                         headers: {
@@ -177,15 +177,38 @@ const handleSignIn = () => {
                 return;
             }
 
-            // 3️⃣ If USER ALREADY EXISTS → login success
+            // 3️⃣ If USER ALREADY EXISTS
             const existingUser = checkData.user;
+
+            // Check if user has a valid role and complete profile
+            if (!existingUser.role || existingUser.role === "") {
+                // User exists but no role set → go to role selection
+                toast.success("Please complete your profile.");
+                navigate("/select-role");
+                return;
+            }
+
+            // Check if employee without dateOfBirth → incomplete profile
+            if (existingUser.role === "employee" && !existingUser.dateOfBirth) {
+                toast.success("Please complete your profile.");
+                navigate("/select-role");
+                return;
+            }
+
+            // Check if HR without company details → incomplete profile
+            if (existingUser.role === "hr" && !existingUser.companyName) {
+                toast.success("Please complete your profile.");
+                navigate("/select-role");
+                return;
+            }
+
+            // 4️⃣ User has valid role and complete profile → login success
             toast.success("Login Successful!");
 
-            // 4️⃣ Navigate based on role of existing user
             if (existingUser.role === "hr") {
-                navigate("/dashboard");
+                navigate("/hr-dashboard");
             } else if (existingUser.role === "employee") {
-                navigate("/dashboard");
+                navigate("/em-dashboard");
             } else {
                 toast.error("Invalid user role!");
             }
@@ -382,7 +405,7 @@ const handleSignIn = () => {
                     </div>
                   </div>
 
-                {/* // Google Sign-In Button */}
+                {/* Google Sign-In Button */}
             <button 
               onClick={handleSignIn}
               className="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-300 transition-all duration-200 flex items-center justify-center gap-3"

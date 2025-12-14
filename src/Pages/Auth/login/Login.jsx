@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import toast, { Toaster } from 'react-hot-toast'; // ← import toast
+import toast, { Toaster } from 'react-hot-toast';
 import useAuth from '../../../Hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router';
 
@@ -8,39 +8,113 @@ const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { signInUser } = useAuth();
+  const { signInUser, signInGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const onSubmit = (data) => {
-  setIsSubmitting(true);
-  console.log(data);
+    setIsSubmitting(true);
 
-  signInUser(data.email, data.password)
-    .then(result => {
-      console.log(result.user);
-      toast.success("Login Successful!");
-      navigate(location?.state?.from || '/');
-    })
-    .catch(error => {
-      console.log(error);
+    signInUser(data.email, data.password)
+      .then(() => {
+        toast.success("✅ Login Successful!");
+        navigate(location?.state?.from || '/');
+      })
+      .catch((error) => {
+        console.log("Firebase error:", error.code, error.message);
 
-      // যদি user না থাকে, Register page এ পাঠাও
-      if (error.code === "auth/user-not-found") {
-        toast.error("Account not found! Redirecting to Register...");
-        navigate('/register');
-      } else {
-        // অন্য কোনো Firebase error হলে শুধু দেখাও
-        toast.error(error.message);
+        if (error.code === "auth/invalid-credential") {
+          toast.error("❌ Email or password is incorrect!");
+        } else if (error.code === "auth/user-not-found") {
+          toast.error("❌ Account not found. Please register first!");
+          setTimeout(() => navigate("/register"), 1500);
+        } else {
+          toast.error("❌ Login failed. Please try again!");
+        }
+      })
+      .finally(() => setIsSubmitting(false));
+  };
+
+  const handleSignIn = async () => {
+    try {
+      const result = await signInGoogle();
+      const gUser = result.user;
+
+      const email = gUser.email?.trim().toLowerCase();
+      console.log("🔍 Checking Google user email:", email);
+
+      // ✅ Check if user exists in database
+      const response = await fetch(
+        `http://localhost:3000/users/check?email=${encodeURIComponent(email)}`
+      );
+
+      if (!response.ok) {
+        toast.error("❌ Server error while checking user!");
+        return;
       }
-    })
-    .finally(() => setIsSubmitting(false));
-};
 
+      const checkData = await response.json();
+      console.log("📊 Check result:", checkData);
 
+      // ❌ User না থাকলে register page এ পাঠান
+      if (!checkData.found) {
+        toast.error("❌ Account not found! Please register first.");
+        setTimeout(() => {
+          navigate("/register", { 
+            state: { 
+              fromGoogle: true,
+              googleUser: {
+                name: gUser.displayName,
+                email: gUser.email,
+                photoURL: gUser.photoURL
+              }
+            }
+          });
+        }, 1500);
+        return;
+      }
+
+      const existingUser = checkData.user;
+
+      // ✅ User আছে কিন্তু role নেই - role select করতে পাঠান
+      if (!existingUser.role || existingUser.role === "") {
+        toast.success("✅ Please complete your profile.");
+        setTimeout(() => {
+          navigate("/select-role", { 
+            state: { 
+              email: existingUser.email,
+              name: existingUser.name,
+              photoURL: existingUser.photoURL
+            }
+          });
+        }, 1000);
+        return;
+      }
+
+      // ✅ User আছে এবং role আছে - dashboard এ পাঠান
+      toast.success("✅ Login Successful!");
+      
+      setTimeout(() => {
+        if (existingUser.role === "hr") {
+          navigate("/hr-dashboard");
+        } else if (existingUser.role === "employee") {
+          navigate("/em-dashboard");
+        } else {
+          toast.error("❌ Invalid user role!");
+          navigate("/");
+        }
+      }, 1000);
+
+    } catch (error) {
+      console.error("❌ Google Sign-In Error:", error);
+      toast.error("❌ Google Login Failed! Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gradient-to-r from-[#063A3A] to-[#0A4D4D]">
+      {/* 🔔 Toast container */}
+      <Toaster position="top-right" reverseOrder={false} />
       
       {/* Left Side - Branding / Illustration */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden">
@@ -136,9 +210,9 @@ const Login = () => {
 
             {/* Google Sign-In */}
             <button
+              onClick={handleSignIn}
               type="button"
-              onClick={() => console.log("Google sign in")}
-              className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+              className="w-full flex cursor-pointer items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -151,16 +225,11 @@ const Login = () => {
 
             {/* Register Links */}
             <p className="text-center text-gray-500 mt-6">
-              Don't have an account?
+              Don't have an account?{' '}
+              <a href="/register" className="text-[#063A3A] font-semibold hover:underline">
+                Register here
+              </a>
             </p>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              <a href="#" className="text-center py-2 px-4 border border-[#063A3A] rounded-lg text-[#063A3A] hover:bg-[#063A3A] hover:text-white transition-all">
-                Join as Employee
-              </a>
-              <a href="#" className="text-center py-2 px-4 border border-[#063A3A] rounded-lg text-[#063A3A] hover:bg-[#063A3A] hover:text-white transition-all">
-                Join as HR
-              </a>
-            </div>
           </form>
         </div>
       </div>
@@ -169,116 +238,3 @@ const Login = () => {
 };
 
 export default Login;
-
-//   const { register, handleSubmit, formState: { errors } } = useForm();
-//   const { signInUser } = useAuth();
-
-//   const location = useLocation();
-//   const navigate = useNavigate();
-
-//   const handleLogin = async (data) => {
-//     try {
-//       const result = await signInUser(data.email, data.password);
-//       console.log("Logged in:", result.user);
-//       navigate(location?.state || "/");
-//     } catch (error) {
-//       console.error("Login error:", error.message);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-[#063A3A] px-4">
-
-//       <motion.div
-//         initial={{ opacity: 0, y: 30 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         transition={{ duration: 0.6 }}
-//         className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-[#CBDCBD]"
-//       >
-
-//         {/* Header */}
-//         <div className="text-center mb-6">
-//           <h2 className="text-4xl font-black text-[#063A3A]">Welcome Back</h2>
-//           <p className="text-gray-600">Login to AssetVerse</p>
-//         </div>
-
-//         {/* FORM */}
-//         <motion.form
-//           onSubmit={handleSubmit(handleLogin)}
-//           initial={{ opacity: 0, x: -40 }}
-//           animate={{ opacity: 1, x: 0 }}
-//           transition={{ duration: 0.5 }}
-//           className="space-y-4"
-//         >
-
-//           {/* Email */}
-//           <div>
-//             <label className="text-sm font-semibold text-[#063A3A]">Email</label>
-//             <input
-//               {...register("email", { required: true })}
-//               className="input input-bordered w-full border-[#063A3A]/40 focus:border-[#063A3A] focus:ring-[#063A3A]"
-//               placeholder="Enter your email"
-//             />
-//             {errors.email && <p className="text-red-600 text-xs">Email is required</p>}
-//           </div>
-
-//           {/* Password */}
-//           <div>
-//             <label className="text-sm font-semibold text-[#063A3A]">Password</label>
-//             <input
-//               {...register("password", { required: true, minLength: 6 })}
-//               type="password"
-//               className="input input-bordered w-full border-[#063A3A]/40 focus:border-[#063A3A] focus:ring-[#063A3A]"
-//               placeholder="Enter your password"
-//             />
-//             {errors.password?.type === "minLength" && (
-//               <p className="text-red-600 text-xs">Password must be at least 6 characters</p>
-//             )}
-//           </div>
-
-//           {/* Forgot Password */}
-//           <div className="flex justify-end">
-//             <Link
-//               to="/forget-password"
-//               state={location.state}
-//               className="text-sm text-[#063A3A] hover:underline"
-//             >
-//               Forgot password?
-//             </Link>
-//           </div>
-
-//           {/* Login Button */}
-//           <button
-//             className="btn w-full bg-[#CBDCBD] text-[#063A3A] font-bold hover:bg-[#b4c3c3]"
-//           >
-//             Login
-//           </button>
-
-//           {/* Register Link */}
-//           <p className="text-center text-sm">
-//             Don’t have an account?{" "}
-//             <Link to="/register" className="font-semibold text-[#063A3A]">
-//               Register
-//             </Link>
-//           </p>
-
-//         </motion.form>
-
-//         {/* Divider */}
-//         <div className="text-center my-4 text-gray-400">OR</div>
-
-//         {/* Social Login */}
-//         <motion.div
-//           initial={{ opacity: 0, y: 25 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.6 }}
-//         >
-//           <SocialLogin />
-//         </motion.div>
-
-//       </motion.div>
-//     </div>
-//   );
-// };
-
-// export default Login;

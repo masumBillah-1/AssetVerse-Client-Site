@@ -85,7 +85,7 @@ const Navbar = () => {
 
            {user ? (
   <Link
-    to={userRole === "hr" ? "/hr-dashboard" : "/hr-dashboard/em-dashboard"}
+    to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
     className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
   >
     Dashboard

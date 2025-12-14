@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Menu, CheckCircle, AlertCircle, Clock, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
-import { Outlet, useNavigate, useLocation } from "react-router";
+import { Outlet, useNavigate, useLocation, Link } from "react-router";
 import useRole from "../Hooks/useRole";
 import useAuth from "../Hooks/useAuth";
 import NotificationComponent from "../Components/Notification";
@@ -23,42 +23,39 @@ export default function DashboardLayout() {
 
   const { user } = useAuth(); // Firebase user
   const { role: userRole, isLoading } = useRole();
-useEffect(() => {
-  if (user?.email) {
-    axios.get(`/users/${user.email}`).then(({ data }) => {
-      if (data.success) setMongoUser(data.user);
-    });
-  }
-}, [user?.email]);
-  // 🔥 Fetch MongoDB user data
-  useEffect(() => {
-    const fetchMongoUser = async () => {
-      if (user?.email) {
-        try {
-          setUserLoading(true);
-          const { data } = await axios.get(`/users/${user.email}`);
-          if (data.success) {
-            setMongoUser(data.user);
-            console.log('✅ MongoDB User loaded:', data.user);
-          }
-        } catch (error) {
-          console.error('❌ Error fetching MongoDB user:', error);
-        } finally {
-          setUserLoading(false);
-        }
-      }
-    };
 
-    fetchMongoUser();
-  }, [user?.email, axios]);
+ useEffect(() => {
+  const fetchMongoUser = async () => {
+    if (!user?.email) return;
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (userRole === "employee" && location.pathname === "/hr-dashboard") {
-        navigate("em-dashboard", { replace: true });
+    try {
+      setUserLoading(true);
+      const { data } = await axios.get(`/users/${user.email}`);
+      if (data.success) {
+        setMongoUser(data.user);
+        console.log("✅ MongoDB User loaded:", data.user);
       }
+    } catch (error) {
+      console.error("❌ Error fetching MongoDB user:", error);
+    } finally {
+      setUserLoading(false);
     }
-  }, [userRole, isLoading, location.pathname, navigate]);
+  };
+
+  fetchMongoUser();
+}, [user?.email, axios]);
+
+  useEffect(() => {
+  if (!isLoading) {
+    if (userRole === "employee" && location.pathname.startsWith("/hr-dashboard")) {
+      navigate("/em-dashboard", { replace: true });
+    }
+
+    if (userRole === "hr" && location.pathname.startsWith("/em-dashboard")) {
+      navigate("/hr-dashboard", { replace: true });
+    }
+  }
+}, [userRole, isLoading, location.pathname, navigate]);
 
   // Loading state
   if (isLoading || userLoading) {
@@ -81,10 +78,10 @@ useEffect(() => {
     { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "hr" },
 
     // Employee
-    { icon: Package, label: "My Assets", path: "/hr-dashboard/em-dashboard", role: "employee" },
-    { icon: Plus, label: "Request Asset", path: "/hr-dashboard/request-asset", role: "employee" },
-    { icon: Users, label: "My Team", path: "/hr-dashboard/my-team", role: "employee" },
-    { icon: User, label: "Profile", path: "/hr-dashboard/profile", role: "employee" },
+    { icon: Package, label: "My Assets", path: "/em-dashboard", role: "employee" },
+    { icon: Plus, label: "Request Asset", path: "/em-dashboard/request-asset", role: "employee" },
+    { icon: Users, label: "My Team", path: "/em-dashboard/my-team", role: "employee" },
+    { icon: User, label: "Profile", path: "/em-dashboard/profile", role: "employee" },
   ];
   
   const filteredMenuItems = MenuItems.filter(item => item.role === userRole);
@@ -97,12 +94,12 @@ useEffect(() => {
           {/* Logo + Toggle */}
           <div className="flex items-center justify-between mb-8">
             {sidebarOpen && (
-              <div className="flex items-center space-x-2">
+              <Link to={'/'} className="flex items-center space-x-2">
                 <div className="w-10 h-10 bg-[var(--accent)] rounded-lg flex items-center justify-center">
                   <Package className="w-6 h-6 text-[var(--primary)]" />
                 </div>
                 <span className="text-xl font-bold text-[var(--accent)]">AssetVerse</span>
-              </div>
+              </Link>
             )}
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-[var(--accent)] hover:bg-[var(--accent)]/10 p-2 rounded-lg">
               <Menu className="w-5 h-5" />

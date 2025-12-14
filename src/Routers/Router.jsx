@@ -65,60 +65,86 @@ export const router = createBrowserRouter ([
             
         ]
     },
-    {
-        path:"/hr-dashboard",
-        Component: DashboardLayout,
-        children: [
-            {
-                index:true,
-                Component: AssetListPage
-            },
-            {
-                path: 'add-asset',
-                Component: AddAssetPage
-            },
-            {
-                path: 'all-requests',
-                Component: AllRequestsPage
-            },
-            {
-                path: 'employee-list',
-                Component: EmployeeList
-            },
-            {
-                path: 'upgrade-package',
-                Component: UpgradePackage
-            },
-            {
-                path: 'profile',
-                Component: Profile
-            },
-            {
-                path: 'em-dashboard',
-                Component: MyAssets
-            },
-            {
-                path: 'request-asset',
-                Component: RequestAsset
-            },
-            {
-                path: 'my-team',
-                Component: MyTeam
-            },
-            {
-                path: 'success',
-                Component: PaymentSuccess
-            },
-            {
-                path: 'cancel',
-                Component: PaymentCancel
-            }
+    // {
+    //     path:"/hr-dashboard",
+    //     Component: DashboardLayout,
+    //     children: [
+    //         {
+    //             index:true,
+    //             Component: AssetListPage
+    //         },
+    //         {
+    //             path: 'add-asset',
+    //             Component: AddAssetPage
+    //         },
+    //         {
+    //             path: 'all-requests',
+    //             Component: AllRequestsPage
+    //         },
+    //         {
+    //             path: 'employee-list',
+    //             Component: EmployeeList
+    //         },
+    //         {
+    //             path: 'upgrade-package',
+    //             Component: UpgradePackage
+    //         },
+    //         {
+    //             path: 'profile',
+    //             Component: Profile
+    //         },
+    //         {
+    //             path: 'em-dashboard',
+    //             Component: MyAssets
+    //         },
+    //         {
+    //             path: 'request-asset',
+    //             Component: RequestAsset
+    //         },
+    //         {
+    //             path: 'my-team',
+    //             Component: MyTeam
+    //         },
+    //         {
+    //             path: 'success',
+    //             Component: PaymentSuccess
+    //         },
+    //         {
+    //             path: 'cancel',
+    //             Component: PaymentCancel
+    //         }
                     
 
 
-        ]
+    //     ]
         
-    }
+    // }
+
+    {
+  path: "/hr-dashboard",
+  element: <DashboardLayout />,
+  children: [
+    { index: true, element: <AssetListPage /> },
+    { path: "add-asset", element: <AddAssetPage /> },
+    { path: "all-requests", element: <AllRequestsPage /> },
+    { path: "employee-list", element: <EmployeeList /> },
+    { path: "upgrade-package", element: <UpgradePackage /> },
+    { path: "profile", element: <Profile /> },
+  ],
+},
+
+{
+  path: "/em-dashboard",
+  element: <DashboardLayout />,
+  children: [
+    { index: true, element: <MyAssets /> },
+    { path: "request-asset", element: <RequestAsset /> },
+    { path: "my-team", element: <MyTeam /> },
+    { path: "profile", element: <Profile /> },
+  ],
+}
+
+
     
   
     

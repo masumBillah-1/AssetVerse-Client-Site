@@ -51,7 +51,7 @@ const RolePage = () => {
 
       if (response.data?.success) {
         showAlert('success', 'Registration Complete!', 'Redirecting to dashboard...');
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setTimeout(() => navigate('/'), 1000);
       } else {
         showAlert('error', 'Registration Failed', response.data?.message || 'Something went wrong!');
       }

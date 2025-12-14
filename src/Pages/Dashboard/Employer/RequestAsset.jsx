@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import useAuth from '../../../Hooks/useAuth';
-import useAxios from '../../../Hooks/useAxios';
 import Swal from 'sweetalert2';
+import useAxios from '../../../Hooks/useAxios';
+import useAuth from '../../../Hooks/useAuth';
 
 const RequestAsset = () => {
   const axiosPublic = useAxios();
@@ -17,7 +17,6 @@ const RequestAsset = () => {
   const [filter, setFilter] = useState("all");
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch companies and assets from MongoDB
   useEffect(() => {
     fetchCompanies();
     fetchAssets();
@@ -25,30 +24,66 @@ const RequestAsset = () => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users');
-      const data = await response.json();
-      // Filter only HR users (companies)
-      const hrs = data.filter(u => u.role === "hr" && u.companyName);
-      setCompanies(hrs);
+      const response = await axiosPublic.get('/hrs');
+      
+      if (response.data.success && response.data.hrs) {
+        setCompanies(response.data.hrs);
+      } else {
+        setCompanies([]);
+      }
     } catch (error) {
       console.error('Failed to fetch companies:', error);
+      
+      try {
+        const usersResponse = await axiosPublic.get('/users');
+        let usersArray = [];
+        
+        if (Array.isArray(usersResponse.data)) {
+          usersArray = usersResponse.data;
+        } else if (usersResponse.data.users) {
+          usersArray = usersResponse.data.users;
+        }
+        
+        const hrs = usersArray.filter(u => u.role === "hr" && u.companyName);
+        setCompanies(hrs);
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        setCompanies([]);
+      }
     }
   };
 
   const fetchAssets = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/assets');
-      const data = await response.json();
-      setAssets(data);
+      const { data } = await axiosPublic.get('/assets');
+      
+      if (Array.isArray(data)) {
+        setAssets(data);
+      } else {
+        setAssets([]);
+      }
     } catch (error) {
       console.error('Failed to fetch assets:', error);
+      setAssets([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRequestClick = (asset) => {
+    // Check if asset has quantity available
+    if (asset.quantity <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Out of Stock',
+        text: 'This asset is currently out of stock.',
+        confirmButtonColor: '#06393a',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+    
     setSelectedAsset(asset);
     setShowModal(true);
   };
@@ -76,14 +111,11 @@ const RequestAsset = () => {
 
     try {
       const response = await axiosPublic.post("/requests", requestData);
-      console.log("✅ Request saved:", response.data);
 
       const updatedQuantity = selectedAsset.quantity - 1;
       await axiosPublic.patch(`/assets/${selectedAsset._id}`, {
         quantity: updatedQuantity
       });
-
-      console.log("✅ Asset quantity updated");
 
       setAssets(prevAssets => 
         prevAssets.map(asset => 
@@ -93,7 +125,6 @@ const RequestAsset = () => {
         )
       );
 
-      // ✅ SweetAlert success message
       Swal.fire({
         icon: 'success',
         title: 'Request Sent!',
@@ -107,9 +138,8 @@ const RequestAsset = () => {
       setSelectedAsset(null);
 
     } catch (error) {
-      console.error("❌ Failed to send request:", error);
+      console.error("Failed to send request:", error);
       
-      // ✅ SweetAlert error message
       Swal.fire({
         icon: 'error',
         title: 'Request Failed',
@@ -122,20 +152,19 @@ const RequestAsset = () => {
     }
   };
 
-  // Filter assets by company and type
+  // Filter assets by company and type (removed quantity check)
   const filteredAssets = assets.filter(asset => {
     // Company filter
-    const matchesCompany = selectedCompanyId === "all" || asset.companyId === selectedCompanyId;
+    const matchesCompany = selectedCompanyId === "all" || 
+                          asset.companyId === selectedCompanyId ||
+                          asset.companyId?.toString() === selectedCompanyId.toString();
     
     // Type filter
     let matchesType = true;
     if (filter === "returnable") matchesType = asset.returnType === "returnable";
     if (filter === "non-returnable") matchesType = asset.returnType === "non-returnable";
     
-    // Quantity check
-    const hasQuantity = asset.quantity > 0;
-    
-    return matchesCompany && matchesType && hasQuantity;
+    return matchesCompany && matchesType;
   });
 
   if (loading) {
@@ -171,8 +200,8 @@ const RequestAsset = () => {
             ))}
           </select>
 
-          {/* Show selected company logo and name */}
-          {selectedCompanyId !== "all" && (
+          {/* Show selected company info */}
+          {selectedCompanyId !== "all" && companies.find(c => c._id === selectedCompanyId) && (
             <div className="mt-4 flex items-center gap-3 p-3 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl">
               {companies.find(c => c._id === selectedCompanyId)?.companyLogo && (
                 <img 
@@ -211,7 +240,7 @@ const RequestAsset = () => {
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            Returnable ({assets.filter(a => a.returnType === "returnable" && a.quantity > 0 && (selectedCompanyId === "all" || a.companyId === selectedCompanyId)).length})
+            Returnable ({assets.filter(a => a.returnType === "returnable" && (selectedCompanyId === "all" || a.companyId === selectedCompanyId)).length})
           </button>
           <button
             onClick={() => setFilter("non-returnable")}
@@ -221,7 +250,7 @@ const RequestAsset = () => {
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            Non-Returnable ({assets.filter(a => a.returnType === "non-returnable" && a.quantity > 0 && (selectedCompanyId === "all" || a.companyId === selectedCompanyId)).length})
+            Non-Returnable ({assets.filter(a => a.returnType === "non-returnable" && (selectedCompanyId === "all" || a.companyId === selectedCompanyId)).length})
           </button>
         </div>
 
@@ -230,17 +259,23 @@ const RequestAsset = () => {
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-2xl font-bold text-gray-700 mb-2">No Assets Available</h3>
-            <p className="text-gray-500">There are no assets matching your criteria at the moment.</p>
+            <p className="text-gray-500">
+              {assets.length === 0 
+                ? "No assets found in database."
+                : "There are no assets matching your criteria at the moment."}
+            </p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
             {filteredAssets.map((asset) => (
               <div
                 key={asset._id}
-                className="bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className={`bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${
+                  asset.quantity <= 0 ? 'opacity-60' : ''
+                }`}
               >
                 {/* Asset Image */}
-                <div className="w-full h-32 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-[#06393a]/10">
+                <div className="w-full h-32 bg-gradient-to-br from-teal-50 to-emerald-100 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-[#06393a]/10 relative">
                   {asset.assetImage ? (
                     <img 
                       src={asset.assetImage} 
@@ -249,6 +284,15 @@ const RequestAsset = () => {
                     />
                   ) : (
                     <span className="text-4xl">📦</span>
+                  )}
+                  
+                  {/* Out of Stock Badge */}
+                  {asset.quantity <= 0 && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        Out of Stock
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -278,16 +322,23 @@ const RequestAsset = () => {
 
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600">Available:</span>
-                    <span className="text-xl font-bold text-[#06393a]">{asset.quantity}</span>
+                    <span className={`text-xl font-bold ${asset.quantity > 0 ? 'text-[#06393a]' : 'text-red-500'}`}>
+                      {asset.quantity}
+                    </span>
                   </div>
                 </div>
 
                 {/* Request Button */}
                 <button
                   onClick={() => handleRequestClick(asset)}
-                  className="w-full py-2.5 cursor-pointer bg-[#06393a] text-white rounded-lg text-sm font-semibold hover:bg-[#06393a]/90 hover:shadow-lg transition-all duration-300"
+                  disabled={asset.quantity <= 0}
+                  className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                    asset.quantity > 0
+                      ? 'bg-[#06393a] text-white hover:bg-[#06393a]/90 hover:shadow-lg cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  Request Asset
+                  {asset.quantity > 0 ? 'Request Asset' : 'Out of Stock'}
                 </button>
               </div>
             ))}
