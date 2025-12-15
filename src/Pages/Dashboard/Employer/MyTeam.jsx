@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Mail, Calendar, Gift, Building2, UserCheck, AlertCircle } from 'lucide-react';
 import useAuth from '../../../Hooks/useAuth';
-import useAxios from '../../../Hooks/useAxios';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+
 
 
 const MyTeam = () => {
@@ -9,7 +10,7 @@ const MyTeam = () => {
   const ACCENT = "#CBDCBD";
 
   const { user } = useAuth();
-  const axios = useAxios();
+  const axios = useAxiosSecure();
 
   const [mongoUser, setMongoUser] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);

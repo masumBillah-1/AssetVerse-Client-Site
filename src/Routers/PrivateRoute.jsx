@@ -1,27 +1,24 @@
-import React, { Children } from 'react';
-
-import { Navigation } from 'lucide-react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router';
 import useAuth from '../Hooks/useAuth';
 
-const PrivateRoute = () => {
-    const {user,loading}= useAuth()
-    const location = useLocation()
+const PrivateRoute = ({ children }) => {
+    const { user, loading } = useAuth();
+    const location = useLocation();
 
-    if(loading){
-        return <div className="min-h-screen flex flex-col justify-center items-center">
-
-            <span className="loading loading-ball loading-xl"></span>
-
-        </div>
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col justify-center items-center">
+                <span className="loading loading-ball loading-xl"></span>
+            </div>
+        );
     }
 
-    if(!user){
-        return <Navigate state={location.pathname} to={'/login'}></Navigate>
+    if (!user) {
+        return <Navigate state={location.pathname} to={'/login'} />;
     }
 
-
-    return Children
+    return children;
 };
 
 export default PrivateRoute;

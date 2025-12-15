@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Crown, Check, Zap } from 'lucide-react';
-import useAxios from '../../../Hooks/useAxios';
+
 import Swal from 'sweetalert2';
 import useAuth from '../../../Hooks/useAuth';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 
 const UpgradePackage = () => {
-  const axiosInstance = useAxios();
+  const axiosInstance = useAxiosSecure();
     const { user } = useAuth();
   const [packages, setPackages] = useState([]);
   const [loadingId, setLoadingId] = useState(null);

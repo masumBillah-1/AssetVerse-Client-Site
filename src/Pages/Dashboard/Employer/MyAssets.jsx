@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../../../Hooks/useAuth';
-import useAxios from '../../../Hooks/useAxios';
+
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 
 const MyAssets = () => {
-  const axiosPublic = useAxios();
+  const axiosPublic = useAxiosSecure();
   const { user } = useAuth();
   
   const [myAssets, setMyAssets] = useState([]);
@@ -18,18 +19,20 @@ const MyAssets = () => {
   }, [user]);
 
   const fetchMyAssets = async () => {
-    try {
-      setLoading(true);
-      // Employee এর email দিয়ে তার সব requests fetch করা
-      const response = await fetch(`http://localhost:3000/requests?employeeEmail=${user.email}`);
-      const data = await response.json();
-      setMyAssets(data);
-    } catch (error) {
-      console.error('Failed to fetch assets:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const { data } = await axiosPublic.get(
+      `/requests?employeeEmail=${user.email}`
+    );
+
+    setMyAssets(data);
+  } catch (error) {
+    console.error("Failed to fetch assets:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleReturn = async (requestId) => {
     if (!window.confirm("Are you sure you want to return this asset?")) return;

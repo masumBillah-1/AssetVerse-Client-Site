@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import useAxios from '../../../Hooks/useAxios';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const TopRequestedAssetsChart = ({ companyId }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const axios = useAxios();
+  const axios = useAxiosSecure();
 
   useEffect(() => {
     if (companyId) {

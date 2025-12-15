@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
-import useAxios from '../../../Hooks/useAxios';
+
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 
 const AllRequestsPage = () => {
-  const axiosInstance = useAxios();
+  const axiosInstance = useAxiosSecure();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');

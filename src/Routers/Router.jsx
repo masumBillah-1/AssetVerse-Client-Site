@@ -20,6 +20,9 @@ import Profile from "../Pages/Dashboard/Profile/Profile";
 import AssetListPage from "../Pages/Dashboard/HrManager/AssetListPage";
 import PaymentSuccess from "../Pages/Dashboard/Payment/PaymentSuccess";
 import PaymentCancel from "../Pages/Dashboard/Payment/PaymentCancel";
+import PrivateRoute from "./PrivateRoute";
+import EmployeeRoute from "./EmployeeRoute";
+import HRRoute from "./HRRoute";
 
 
 export const router = createBrowserRouter ([
@@ -120,30 +123,152 @@ export const router = createBrowserRouter ([
         
     // }
 
-    {
-  path: "/hr-dashboard",
-  element: <DashboardLayout />,
-  children: [
-    { index: true, element: <AssetListPage /> },
-    { path: "add-asset", element: <AddAssetPage /> },
-    { path: "all-requests", element: <AllRequestsPage /> },
-    { path: "employee-list", element: <EmployeeList /> },
-    { path: "upgrade-package", element: <UpgradePackage /> },
-    { path: "profile", element: <Profile /> },
-  ],
-},
+  {
+    path: "/hr-dashboard",
+    element: (
+      <PrivateRoute>
+        <HRRoute>
+          <DashboardLayout />
+        </HRRoute>
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <AssetListPage />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "add-asset",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <AddAssetPage />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "all-requests",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <AllRequestsPage />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "employee-list",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <EmployeeList />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "upgrade-package",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <UpgradePackage />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <Profile />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+              {
+          path: "success",
+          element: (
+            <PrivateRoute>
+              <HRRoute>
+                <PaymentSuccess />
+              </HRRoute>
+            </PrivateRoute>
+          )
+        },
+        {
+          path: "cancel",
+          element: (
+            <PrivateRoute>
+              <HRRoute>
+                <PaymentCancel />
+              </HRRoute>
+            </PrivateRoute>
+          )
+        }
+    ],
+  },
 
-{
-  path: "/em-dashboard",
-  element: <DashboardLayout />,
-  children: [
-    { index: true, element: <MyAssets /> },
-    { path: "request-asset", element: <RequestAsset /> },
-    { path: "my-team", element: <MyTeam /> },
-    { path: "profile", element: <Profile /> },
-  ],
-}
 
+  {
+    path: "/em-dashboard",
+    element: (
+      <PrivateRoute>
+        <EmployeeRoute>
+          <DashboardLayout />
+        </EmployeeRoute>
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <PrivateRoute>
+            <EmployeeRoute>
+              <MyAssets />
+            </EmployeeRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "request-asset",
+        element: (
+          <PrivateRoute>
+            <EmployeeRoute>
+              <RequestAsset />
+            </EmployeeRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "my-team",
+        element: (
+          <PrivateRoute>
+            <EmployeeRoute>
+              <MyTeam />
+            </EmployeeRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <PrivateRoute>
+            <EmployeeRoute>
+              <Profile />
+            </EmployeeRoute> 
+          </PrivateRoute> 
+        ),
+      },
+    ],
+  }
 
     
   

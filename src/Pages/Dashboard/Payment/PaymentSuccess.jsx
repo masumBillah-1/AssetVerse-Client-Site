@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { CheckCircle } from 'lucide-react';
 
 import Swal from 'sweetalert2';
-import useAxios from '../../../Hooks/useAxios';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const axiosInstance = useAxios();
+  const axiosInstance = useAxiosSecure();
   const [processing, setProcessing] = useState(true);
   const hasRun = useRef(false); // Prevent double execution
 

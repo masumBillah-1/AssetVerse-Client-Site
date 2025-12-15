@@ -20,6 +20,7 @@ const AssetListPage = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [assignedCount, setAssignedCount] = useState(0);
   const [companyId, setCompanyId] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // Edit Modal States
   const [editingAsset, setEditingAsset] = useState(null);
@@ -34,12 +35,31 @@ const AssetListPage = () => {
 
   useEffect(() => {
     const fetchAssets = async () => {
-      if (!user?.email) return;
+      if (!user?.email) {
+        setLoading(false);
+        return;
+      }
 
       try {
+        setLoading(true);
+
         // Get user data to find their _id
         const userRes = await axiosSecure.get(`/users/${user.email}`);
+        
+        if (!userRes.data.success || !userRes.data.user) {
+          console.error('❌ User not found');
+          Swal.fire({
+            icon: "error",
+            title: "User Not Found",
+            text: "Could not fetch user data. Please login again.",
+            confirmButtonColor: '#06393a'
+          });
+          setLoading(false);
+          return;
+        }
+
         const currentUser = userRes.data.user;
+        console.log('✅ Current user:', currentUser);
 
         // Determine companyId
         let userCompanyId;
@@ -49,6 +69,19 @@ const AssetListPage = () => {
           userCompanyId = currentUser.affiliatedCompanies?.[0];
         }
 
+        if (!userCompanyId) {
+          console.error('❌ Company ID not found');
+          Swal.fire({
+            icon: "warning",
+            title: "No Company Found",
+            text: "You are not affiliated with any company yet.",
+            confirmButtonColor: '#06393a'
+          });
+          setLoading(false);
+          return;
+        }
+
+        console.log('✅ Company ID:', userCompanyId);
         setCompanyId(userCompanyId);
 
         // Fetch assets with companyId filter
@@ -56,8 +89,11 @@ const AssetListPage = () => {
           params: { companyId: userCompanyId }
         });
         
-        setAssets(res.data || []);
-        setTotalPages(Math.ceil((res.data?.length || 0) / pageSize));
+        const fetchedAssets = res.data || [];
+        console.log('✅ Assets fetched:', fetchedAssets.length);
+        
+        setAssets(fetchedAssets);
+        setTotalPages(Math.ceil(fetchedAssets.length / pageSize));
 
         // Fetch ALL requests for this company
         const requestsRes = await axiosSecure.get('/requests', {
@@ -65,6 +101,7 @@ const AssetListPage = () => {
         });
         
         const allRequests = requestsRes.data || [];
+        console.log('✅ Requests fetched:', allRequests.length);
         
         // Count pending requests for this company
         const pendingRequestsCount = allRequests.filter(req => req.requestStatus === 'pending').length;
@@ -74,11 +111,45 @@ const AssetListPage = () => {
         const assignedRequestsCount = allRequests.filter(req => req.requestStatus === 'approved').length;
         setAssignedCount(assignedRequestsCount);
 
+        setLoading(false);
+
       } catch (err) {
-        console.error(err);
-        Swal.fire("Error", "Poor Network 🛜", "error");
+        console.error('❌ Error fetching data:', err);
+        
+        // More specific error messages
+        if (err.response) {
+          // Server responded with error
+          console.error('Server Error:', err.response.data);
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: err.response.data?.error || err.response.data?.message || "Failed to fetch data",
+            confirmButtonColor: '#06393a'
+          });
+        } else if (err.request) {
+          // Request made but no response
+          console.error('Network Error:', err.request);
+          Swal.fire({
+            icon: "error",
+            title: "Network Error",
+            text: "Poor Network Connection 🛜. Please check your internet.",
+            confirmButtonColor: '#06393a'
+          });
+        } else {
+          // Something else happened
+          console.error('Error:', err.message);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An unexpected error occurred. Please try again.",
+            confirmButtonColor: '#06393a'
+          });
+        }
+        
+        setLoading(false);
       }
     };
+
     fetchAssets();
   }, [user?.email, axiosSecure]);
 
@@ -97,11 +168,21 @@ const AssetListPage = () => {
       if (confirmed.isConfirmed) {
         await axiosSecure.delete(`/assets/${id}`);
         setAssets(prev => prev.filter(asset => asset._id !== id));
-        Swal.fire("Deleted!", "Asset has been deleted.", "success");
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Asset has been deleted.",
+          confirmButtonColor: '#06393a'
+        });
       }
     } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Failed to delete asset", "error");
+      console.error('❌ Delete error:', err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete asset",
+        confirmButtonColor: '#06393a'
+      });
     }
   };
 
@@ -169,7 +250,7 @@ const AssetListPage = () => {
       setEditFormData({ assetName: '', quantity: 0, assetImage: '' });
 
     } catch (err) {
-      console.error('Update error:', err);
+      console.error('❌ Update error:', err);
       Swal.fire({
         icon: 'error',
         title: 'Update Failed',
@@ -218,6 +299,18 @@ const AssetListPage = () => {
   const filteredAssets = assets.filter(a => a.assetName.toLowerCase().includes(search.toLowerCase()));
   const assetsPage = filteredAssets.slice((page - 1) * pageSize, page * pageSize);
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-[#06393a]">Loading Assets...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-5">
       {/* Stats cards */}
@@ -248,9 +341,12 @@ const AssetListPage = () => {
         </div>
       )}
 
-      <div>
-        <NotificationAnalytics companyId={companyId} />
-      </div>
+      {/* Notification Analytics */}
+      {companyId && (
+        <div>
+          <NotificationAnalytics companyId={companyId} />
+        </div>
+      )}
 
       {/* Assets Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -282,64 +378,84 @@ const AssetListPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {assetsPage.map(asset => (
-                <tr key={asset._id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-2xl">
-                    {asset.assetImage ? 
-                      <img src={asset.assetImage} className="w-10 h-10 object-contain" alt={asset.assetName} /> 
-                      : "–"
-                    }
-                  </td>
-                  <td className="px-6 py-4">{asset.assetName}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${asset.returnType === "returnable" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                      {asset.returnType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{asset.quantity}</td>
-                  <td className="px-6 py-4">{new Date(asset.addedAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">{asset.addedBy?.name || '-'}</td>
-                  <td className="px-6 py-4 flex space-x-2">
-                    {/* ✅ Edit Button */}
-                    <button 
-                      onClick={() => handleEditClick(asset)} 
-                      className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600 transition flex items-center space-x-1"
-                      title="Edit Asset"
-                    >
-                      <Edit className="w-4 h-4" /> <span>Edit</span>
-                    </button>
-
-                    {asset.returnType === "returnable" && (
-                      <button className="btn btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
-                        Return
+              {assetsPage.length > 0 ? (
+                assetsPage.map(asset => (
+                  <tr key={asset._id} className="hover:bg-gray-50 transition">
+                    <td className="px-6 py-4 text-2xl">
+                      {asset.assetImage ? 
+                        <img src={asset.assetImage} className="w-10 h-10 object-contain" alt={asset.assetName} /> 
+                        : "–"
+                      }
+                    </td>
+                    <td className="px-1 text-[12px] py-1 font-bold">{asset.assetName}</td>
+                    <td className=" py-1">
+                      <span className={`px-3 py-1 text-[12px] rounded-lg text-sm font-semibold ${asset.returnType === "returnable" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                        {asset.returnType}
+                      </span>
+                    </td>
+                    <td className="px-2 text-center py-2">{asset.quantity}</td>
+                    <td className="px-2 py-2 text-center">{new Date(asset.addedAt).toLocaleDateString()}</td>
+                    <td className="px-1 text-[13px] font-medium text-center py-1">{asset.addedBy?.name || '-'}</td>
+                    <td className="px-6 py-4 flex space-x-2">
+                      {/* ✅ Edit Button */}
+                      <button 
+                        onClick={() => handleEditClick(asset)} 
+                        className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600 transition flex items-center space-x-1"
+                        title="Edit Asset"
+                      >
+                        <Edit className="w-4 h-4" /> <span>Edit</span>
                       </button>
-                    )}
-                    
-                    <button 
-                      onClick={() => handlePrint(asset)} 
-                      className="btn btn-sm bg-[var(--primary)] text-white hover:opacity-90 transition flex items-center space-x-1"
-                    >
-                      <Printer className="w-4 h-4" /> <span>Print</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => deleteAsset(asset._id)} 
-                      className="btn btn-sm bg-red-100 text-red-700 flex items-center space-x-1"
-                    >
-                      <Trash2 className="w-4 h-4" /> <span>Delete</span>
-                    </button>
+
+                      {asset.returnType === "returnable" && (
+                        <button className="btn btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
+                          Return
+                        </button>
+                      )}
+                      
+                      <button 
+                        onClick={() => handlePrint(asset)} 
+                        className="btn btn-sm bg-[var(--primary)] text-white hover:opacity-90 transition flex items-center space-x-1"
+                      >
+                        <Printer className="w-4 h-4" /> <span>Print</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => deleteAsset(asset._id)} 
+                        className="btn btn-sm bg-red-100 text-red-700 flex items-center space-x-1"
+                      >
+                        <Trash2 className="w-4 h-4" /> <span>Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center py-8 text-gray-500">
+                    No assets found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         <div className="p-4 flex items-center justify-between">
-          <div className="text-sm text-gray-600">Page {page} of {totalPages}</div>
+          <div className="text-sm text-gray-600">Page {page} of {totalPages || 1}</div>
           <div className="flex space-x-2">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 border rounded">Prev</button>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="px-3 py-1 border rounded">Next</button>
+            <button 
+              onClick={() => setPage(p => Math.max(1, p - 1))} 
+              disabled={page === 1}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button 
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+              disabled={page === totalPages || totalPages === 0}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

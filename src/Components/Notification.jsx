@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Bell, CheckCircle, AlertCircle, Package, Clock, Trash2, CheckCheck } from 'lucide-react';
 import useAxios from '../Hooks/useAxios';
 
-
 const NotificationComponent = ({ userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -21,7 +20,7 @@ const NotificationComponent = ({ userId }) => {
     if (isOpen && userId) {
       const interval = setInterval(() => {
         fetchNotifications();
-      }, 3000); // 30 seconds
+      }, 30000); // 30 seconds
 
       return () => clearInterval(interval);
     }
@@ -47,15 +46,20 @@ const NotificationComponent = ({ userId }) => {
   // ✅ Mark single notification as read
   const markAsRead = async (notificationId) => {
     try {
+      console.log('📝 Marking notification as read:', notificationId);
+      
       const { data } = await axios.patch(`/notifications/${notificationId}/read`, {
         userId: userId
       });
       
       if (data.success && !data.alreadyRead) {
+        // ✅ Update local state to show as read
         setNotifications(notifications.map(notif =>
           notif._id === notificationId ? { ...notif, read: true } : notif
         ));
         console.log('✅ Notification marked as read:', notificationId);
+      } else if (data.alreadyRead) {
+        console.log('ℹ️ Notification was already marked as read');
       }
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
@@ -65,6 +69,8 @@ const NotificationComponent = ({ userId }) => {
   // ✅ Mark all notifications as read
   const markAllAsRead = async () => {
     try {
+      console.log('📝 Marking all notifications as read...');
+      
       const { data } = await axios.patch('/notifications/mark-all-read', {
         userId: userId
       });
@@ -139,6 +145,7 @@ const NotificationComponent = ({ userId }) => {
     if (message.includes('pending') || message.includes('waiting')) return <Clock className="w-5 h-5 text-yellow-600" />;
     if (message.includes('added')) return <Package className="w-5 h-5 text-blue-600" />;
     if (message.includes('return') || message.includes('reminder')) return <AlertCircle className="w-5 h-5 text-red-600" />;
+    if (message.includes('requested')) return <AlertCircle className="w-5 h-5 text-purple-600" />;
     return <Bell className="w-5 h-5 text-gray-600" />;
   };
 
@@ -147,6 +154,7 @@ const NotificationComponent = ({ userId }) => {
     if (message.includes('pending') || message.includes('waiting')) return 'bg-yellow-100';
     if (message.includes('added')) return 'bg-blue-100';
     if (message.includes('return') || message.includes('reminder')) return 'bg-red-100';
+    if (message.includes('requested')) return 'bg-purple-100';
     return 'bg-gray-100';
   };
 
@@ -241,7 +249,7 @@ const NotificationComponent = ({ userId }) => {
                       </div>
                       <div className="flex items-center gap-2">
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 animate-pulse"></div>
                         )}
                         <button
                           onClick={(e) => deleteNotification(notification._id, e)}

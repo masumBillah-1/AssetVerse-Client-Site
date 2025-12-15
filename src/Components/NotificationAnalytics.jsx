@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Eye, Users, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
+import { Bell, Eye, Users, TrendingUp, Clock, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import useAxios from '../Hooks/useAxios';
 
 const NotificationAnalytics = ({ companyId }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openNotifications, setOpenNotifications] = useState(new Set());
   const axios = useAxios();
 
   useEffect(() => {
@@ -28,6 +29,41 @@ const NotificationAnalytics = ({ companyId }) => {
     }
   };
 
+  const toggleNotification = (id) => {
+    setOpenNotifications(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    const confirmed = confirm('Are you sure you want to delete this notification?');
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`/notifications/${notificationId}`);
+      
+      setAnalytics(prev => ({
+        ...prev,
+        notifications: prev.notifications.filter(n => n._id !== notificationId),
+        analytics: {
+          ...prev.analytics,
+          totalNotifications: prev.analytics.totalNotifications - 1
+        }
+      }));
+
+      console.log('✅ Notification deleted');
+    } catch (error) {
+      console.error('❌ Error deleting notification:', error);
+      alert('Failed to delete notification. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96 bg-white rounded-xl shadow-lg">
@@ -46,6 +82,18 @@ const NotificationAnalytics = ({ companyId }) => {
   }
 
   const { totalNotifications, totalReads, avgReadsPerNotification, unreadNotifications } = analytics.analytics;
+
+  // ✅ FIXED: Remove duplicate notifications by unique _id
+  const uniqueNotifications = analytics.notifications.reduce((acc, current) => {
+    const exists = acc.find(item => item._id === current._id);
+    if (!exists) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+
+  console.log('✅ Unique notifications:', uniqueNotifications.length);
+  console.log('📊 All notification types:', uniqueNotifications.map(n => n.notificationType));
 
   return (
     <div className="space-y-6">
@@ -71,7 +119,7 @@ const NotificationAnalytics = ({ companyId }) => {
             </div>
           </div>
           <p className="text-sm text-gray-600 mb-1">Total Notifications</p>
-          <p className="text-3xl font-bold text-blue-600">{totalNotifications}</p>
+          <p className="text-3xl font-bold text-blue-600">{uniqueNotifications.length}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-green-100 hover:shadow-xl transition">
@@ -105,109 +153,176 @@ const NotificationAnalytics = ({ companyId }) => {
         </div>
       </div>
 
-      {/* Detailed Notifications Table */}
+      {/* Accordion Notifications - All Types */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-[#06393a]">Notification Details</h3>
-          <p className="text-gray-600 text-sm mt-1">View who read each notification</p>
+        <div className="p-4 border-b border-gray-200">
+          <h3 className="text-lg font-bold text-[#06393a]">All Notifications</h3>
+          <p className="text-gray-600 text-xs mt-1">
+            View all company notifications ({uniqueNotifications.length} items)
+          </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Message</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Date</th>
-                <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">Reads</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Read By</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {analytics.notifications.map((notif) => (
-                <tr key={notif._id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-gray-800 text-sm">{notif.message}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      notif.notificationType === 'asset_added' 
-                        ? 'bg-blue-100 text-blue-700'
-                        : notif.notificationType === 'asset_request'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {notif.notificationType.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(notif.date).toLocaleString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      {notif.totalReads > 0 ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-gray-400" />
-                      )}
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        notif.totalReads > 0 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {notif.totalReads}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {notif.readers.length > 0 ? (
-                      <div className="flex flex-col gap-1">
-                        {notif.readers.map((reader, idx) => (
-                          <div key={idx} className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gradient-to-br from-[#06393a] to-teal-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {reader.name.charAt(0)}
-                            </div>
-                            <span className="text-sm text-gray-700">
-                              {reader.name}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              reader.role === 'hr' 
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {reader.role}
-                            </span>
+        <div className="divide-y divide-gray-200">
+          {uniqueNotifications.length > 0 ? (
+            uniqueNotifications.map((notif) => {
+              const isOpen = openNotifications.has(notif._id);
+              
+              return (
+                <div key={notif._id} className="border-b border-gray-100">
+                  {/* Accordion Header */}
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => toggleNotification(notif._id)}
+                      className="flex-1 px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition"
+                    >
+                      {/* Icon */}
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Bell className="w-4 h-4 text-blue-600" />
+                      </div>
+
+                      {/* Message */}
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-semibold text-gray-800 text-sm truncate">{notif.message}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-gray-500">
+                            {new Date(notif.date).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Read Count Badge */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {notif.totalReads > 0 ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-gray-400" />
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          notif.totalReads > 0 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {notif.totalReads}
+                        </span>
+                      </div>
+
+                      {/* Chevron */}
+                      <div className="flex-shrink-0">
+                        {isOpen ? (
+                          <ChevronUp className="w-4 h-4 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDeleteNotification(notif._id)}
+                      className="px-3 py-3 text-red-500 hover:bg-red-50 transition flex-shrink-0"
+                      title="Delete notification"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Accordion Content */}
+                  {isOpen && (
+                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                      {notif.readers.length > 0 ? (
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-700 mb-3">
+                            Read by {notif.readers.length} {notif.readers.length === 1 ? 'person' : 'people'}:
+                          </h4>
+                          
+                          {/* ✅ Avatar Group with Real Photos & Tooltips - Like Screenshot 2 */}
+                          <div className="flex -space-x-3">
+                            {notif.readers.map((reader, idx) => (
+                              <div 
+                                key={idx} 
+                                className="group relative"
+                              >
+                                {/* Avatar */}
+                                <div className="relative">
+                                  <div className="w-12 h-12 rounded-full ring-2 ring-white hover:ring-[#06393a] transition-all cursor-pointer overflow-hidden bg-gradient-to-br from-[#06393a] to-teal-600 flex items-center justify-center">
+                                    {reader.photoURL ? (
+                                      <img 
+                                        src={reader.photoURL} 
+                                        alt={reader.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          // Fallback to initial if image fails
+                                          e.target.style.display = 'none';
+                                        }}
+                                      />
+                                    ) : (
+                                      <span className="text-white text-lg font-bold">
+                                        {reader.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* ✅ Tooltip on Hover */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                                    <div className="font-bold">{reader.name}</div>
+                                    <div className="text-gray-300 text-[10px]">{reader.email}</div>
+                                    <div className="text-teal-300 text-[10px] uppercase font-semibold mt-0.5">
+                                      {reader.role}
+                                    </div>
+                                    {/* Tooltip Arrow */}
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                                      <div className="border-4 border-transparent border-t-gray-900"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm">No reads yet</span>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-4 text-gray-400">
+                          <Clock className="w-8 h-8 mb-1 opacity-50" />
+                          <p className="font-medium text-xs">No reads yet</p>
+                        </div>
+                      )}
 
-        {analytics.notifications.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
-            <Bell className="w-16 h-16 mx-auto mb-3 opacity-20" />
-            <p className="font-medium">No notifications found</p>
-          </div>
-        )}
+                      {/* Unread Count */}
+                      {notif.unreadCount > 0 && (
+                        <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                          <p className="text-xs text-orange-700">
+                            <span className="font-bold">{notif.unreadCount}</span> not read yet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <Bell className="w-12 h-12 mx-auto mb-2 opacity-20" />
+              <p className="font-medium text-sm">No notifications found</p>
+              <p className="text-xs mt-1">Notifications will appear here</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Engagement Insight */}
-      {analytics.notifications.length > 0 && (
+      {uniqueNotifications.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -216,14 +331,13 @@ const NotificationAnalytics = ({ companyId }) => {
             <div>
               <h4 className="font-bold text-gray-800 mb-2">Engagement Insights</h4>
               <p className="text-sm text-gray-700 mb-2">
-                Out of <span className="font-bold text-blue-600">{totalNotifications}</span> notifications sent, 
-                <span className="font-bold text-green-600"> {totalReads}</span> have been read.
-                {unreadNotifications > 0 && (
-                  <> There are still <span className="font-bold text-orange-600">{unreadNotifications}</span> unread notifications.</>
+                You have <span className="font-bold text-blue-600">{uniqueNotifications.length}</span> total notifications.
+                {totalReads > 0 && (
+                  <> <span className="font-bold text-green-600">{totalReads}</span> reads across all notifications.</>
                 )}
               </p>
               <p className="text-sm text-gray-600">
-                Average engagement rate: <span className="font-bold">{avgReadsPerNotification} reads per notification</span>
+                Average engagement: <span className="font-bold">{avgReadsPerNotification} reads per notification</span>
               </p>
             </div>
           </div>

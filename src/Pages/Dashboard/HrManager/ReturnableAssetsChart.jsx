@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Sector, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
-import useAxios from '../../../Hooks/useAxios';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+
 
 const COLORS = ['#0088FE', '#FF8042'];
 
@@ -56,7 +57,7 @@ const ReturnableAssetsChart = ({ companyId }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
-  const axios = useAxios();
+  const axios = useAxiosSecure();
 
   useEffect(() => {
     if (companyId) {

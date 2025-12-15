@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import Swal from "sweetalert2";
-import useAxios from "../../../Hooks/useAxios";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+
 
 
 const EmployeeList = () => {
-  const axiosPublic = useAxios();
+  const axiosPublic = useAxiosSecure();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);

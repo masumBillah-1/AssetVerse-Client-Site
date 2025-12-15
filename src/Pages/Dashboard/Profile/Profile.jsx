@@ -4,9 +4,10 @@ import {
   Mail, Calendar, Shield, Award, TrendingUp, FileText, Clock,
   CheckCircle, AlertCircle, CreditCard, Crown, Zap, ArrowUpCircle
 } from 'lucide-react';
-import useAxios from '../../../Hooks/useAxios';
+
 import useAuth from '../../../Hooks/useAuth';
 import useRole from '../../../Hooks/useRole';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const Profile = () => {
   const PRIMARY = '#06393a';
@@ -14,7 +15,7 @@ const Profile = () => {
   const LIGHT_BG = '#f0f9f9';
   const CARD_BG = '#ffffff';
   
-  const axios = useAxios();
+  const axios = useAxiosSecure();
   const { user } = useAuth();
   const { role: userRole, isLoading: roleLoading } = useRole();
 

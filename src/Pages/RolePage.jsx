@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../Hooks/useAuth';
-import useAxiosSecure from '../Hooks/useAxiosSecure';
+
 import { useNavigate } from 'react-router';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
 
 const RolePage = () => {
   const [currentStep, setCurrentStep] = useState(1);

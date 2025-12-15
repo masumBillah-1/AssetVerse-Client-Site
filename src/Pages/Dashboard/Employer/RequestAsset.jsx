@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import useAxios from '../../../Hooks/useAxios';
+
 import useAuth from '../../../Hooks/useAuth';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const RequestAsset = () => {
-  const axiosPublic = useAxios();
+  const axiosPublic = useAxiosSecure();
   const { user } = useAuth();
   
   const [assets, setAssets] = useState([]);

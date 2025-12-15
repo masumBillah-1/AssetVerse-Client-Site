@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import useAuth from "../../../Hooks/useAuth";
 
@@ -53,7 +53,11 @@ const onSubmit = (data) => {
             icon: "success",
             title: "Registration Successful!",
             text: `User ID: ${serverResponse.userId}`,
+          }).then(() => {
+            // ✅ Navigate to home page after success
+            navigate("/");
           });
+          
         } else {
           // ❌ SweetAlert server error
           Swal.fire({
@@ -423,9 +427,9 @@ const handleSignIn = () => {
                   {/* Login Link */}
                   <p className="text-center text-gray-600 text-sm">
                     Already have an account?{" "}
-                    <a href="#" className="text-emerald-700 hover:text-emerald-800 font-medium">
+                    <Link to={'/login'} className="text-emerald-700 hover:text-emerald-800 font-medium">
                       Sign in
-                    </a>
+                    </Link>
                   </p>
                 </div>
               )}
@@ -553,7 +557,7 @@ const handleSignIn = () => {
                     <button 
                       onClick={handleSubmit(onSubmit)}
                       disabled={isSubmitting}
-                      className="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 btn bg-emerald-800 cursor-pointer hover:bg-emerald-900 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? "Creating Account..." : "Complete Registration ✓"}
                     </button>

@@ -5,6 +5,7 @@ import useRole from "../Hooks/useRole";
 import useAuth from "../Hooks/useAuth";
 import NotificationComponent from "../Components/Notification";
 import useAxios from "../Hooks/useAxios"; // 🔥 Import করুন
+import useAxiosSecure from "../Hooks/useAxiosSecure";
 
 export default function DashboardLayout() {
   const PRIMARY = "#063A3A";
@@ -19,10 +20,11 @@ export default function DashboardLayout() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const axios = useAxios();
+  const axios = useAxiosSecure()
 
-  const { user } = useAuth(); // Firebase user
+  const { user, logOut } = useAuth(); // Firebase user
   const { role: userRole, isLoading } = useRole();
+
 
  useEffect(() => {
   const fetchMongoUser = async () => {
@@ -86,6 +88,17 @@ export default function DashboardLayout() {
   
   const filteredMenuItems = MenuItems.filter(item => item.role === userRole);
 
+
+  const handleLogout = () => {
+  logOut()
+    .then(() => {
+      navigate("/login"); // ✅ logout হলে login page
+    })
+    .catch(error => {
+      console.log(error);
+    });
+};
+
   return (
     <div className="min-h-screen flex bg-[var(--accent)]" style={{ ['--primary']: PRIMARY, ['--accent']: ACCENT }}>
       {/* SIDEBAR */}
@@ -126,7 +139,7 @@ export default function DashboardLayout() {
 
           {/* Logout */}
           {sidebarOpen && (
-            <button className="w-full mt-8 flex items-center space-x-3 px-4 py-3 text-red-300 hover:bg-red-500/10 rounded-lg transition-all">
+            <button  onClick={handleLogout} className="w-full cursor-pointer mt-8 flex items-center space-x-3 px-4 py-3 text-red-300 hover:bg-red-500/10 rounded-lg transition-all">
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Logout</span>
             </button>
