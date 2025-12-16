@@ -4,17 +4,6 @@
   <img src="./assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
 </p>
 
-<p align="center">
-  <strong>A Full-Stack B2B Corporate Asset Management System</strong>
-</p>
-
-<p align="center">
-  <a href="#-project-purpose">Purpose</a> •
-  <a href="#-live-site">Live Site</a> •
-  <a href="#-key-features">Features</a> •
-  <a href="#-technologies-used">Technologies</a> •
-  <a href="#️-how-to-run-locally">Installation</a>
-</p>
 
 ---
 
