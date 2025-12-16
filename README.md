@@ -15,15 +15,15 @@ AssetVerse is a comprehensive full-stack B2B Corporate Asset Management System d
 
 ## 🔗 Live Site
 
-👉 **[https://your-live-site-url.com](https://your-live-site-url.com)**
+👉 **[https://boisterous-blancmange-4da68a.netlify.app](https://boisterous-blancmange-4da68a.netlify.app)**
 
 ---
 
 ## 👤 Test Credentials
 
 ### HR Manager Account
-- **Email:** `hr@testcompany.com`  
-- **Password:** `your-secure-password`
+- **Email:** `mb6517640@gmail.com`  
+- **Password:** `V5DAaj58xzfTmju`
 
 ---
 
@@ -178,7 +178,7 @@ npm install
 npm run dev
 ```
 
-The client will run on `http://localhost:5173` (or your configured port)
+The client will run on `https://github.com/masumBillah-1/AssetVerse-Client-Site` (or your configured port)
 
 ### Server Setup
 
@@ -193,7 +193,7 @@ npm install
 nodemon index.js
 ```
 
-The server will run on `http://localhost:5000` (or your configured port)
+The server will run on `https://github.com/masumBillah-1/AssetVerse-Server-Site` (or your configured port)
 
 ---
 
@@ -218,8 +218,8 @@ The server will run on `http://localhost:5000` (or your configured port)
 
 ## 🔗 GitHub Repositories
 
-- **Client Repo:** [https://github.com/your-username/assetverse-client](https://github.com/your-username/assetverse-client)
-- **Server Repo:** [https://github.com/your-username/assetverse-server](https://github.com/your-username/assetverse-server)
+- **Client Repo:** [https://github.com/masumBillah-1/AssetVerse-Client-Site](https://github.com/masumBillah-1/AssetVerse-Client-Site)
+- **Server Repo:** [https://github.com/masumBillah-1/AssetVerse-Server-Site](https://github.com/masumBillah-1/AssetVerse-Server-Site)
 
 ---
 
@@ -270,8 +270,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Your Name**
 
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/your-profile)
+- GitHub: [Masum Billah](https://github.com/masumBillah-1)
+
 
 ---
 

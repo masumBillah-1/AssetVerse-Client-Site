@@ -45,7 +45,7 @@ const Login = () => {
 
       // ✅ Check if user exists in database
       const response = await fetch(
-        `https://asset-verse-server-site.vercel.appusers/check?email=${encodeURIComponent(email)}`
+        `https://asset-verse-server-site.vercel.app/users/check?email=${encodeURIComponent(email)}`
       );
 
       if (!response.ok) {
