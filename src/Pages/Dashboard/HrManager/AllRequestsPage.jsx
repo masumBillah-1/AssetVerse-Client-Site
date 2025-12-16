@@ -66,7 +66,7 @@ const approveRequest = async (id) => {
         icon: 'success',
         title: 'Approved!',
         text: response.data.message || 'Request has been approved successfully.',
-        timer: 2000,
+        timer: 1000,
         showConfirmButton: false
       });
     }

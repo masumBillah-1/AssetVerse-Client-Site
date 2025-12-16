@@ -45,7 +45,7 @@ const Login = () => {
 
       // ✅ Check if user exists in database
       const response = await fetch(
-        `http://localhost:3000/users/check?email=${encodeURIComponent(email)}`
+        `https://asset-verse-server-site.vercel.appusers/check?email=${encodeURIComponent(email)}`
       );
 
       if (!response.ok) {
@@ -113,6 +113,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-r from-[#063A3A] to-[#0A4D4D]">
+
+      <title>Login</title>
+
+
       {/* 🔔 Toast container */}
       <Toaster position="top-right" reverseOrder={false} />
       

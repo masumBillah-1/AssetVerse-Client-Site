@@ -1,6 +1,32 @@
 import { Users, Shield, Zap, TrendingUp, Package, Award, ArrowRight, Star } from 'lucide-react';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
+import useAuth from '../Hooks/useAuth';
+import useRole from '../Hooks/useRole';
+import { useNavigate } from 'react-router';
+
+
 
 const Banner = () => {
+
+
+  const axios = useAxiosSecure();
+  const { user } = useAuth();
+  const { role, isLoading } = useRole();
+  const navigate = useNavigate();
+
+  const handlePrimaryAction = () => {
+    if (isLoading) return; // safety guard
+
+    if (user && role === "employee") {
+      navigate("/em-dashboard");
+    } 
+    else if (user && role === "hr") {
+      navigate("/hr-dashboard");
+    } 
+    else {
+      navigate("/register");
+    }
+  };
   return (
     <>
       <style>{`
@@ -186,15 +212,28 @@ const Banner = () => {
 
             {/* BUTTONS */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-3 animate-fadeInUp delay-400">
-              <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-[#063A3A] text-[#CBDCBD] rounded-xl text-base sm:text-lg font-bold hover:scale-105 hover:shadow-2xl transition-all duration-300 flex items-center space-x-2 relative overflow-hidden">
-                <span className="relative z-10">Get Started Free</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
-                <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100"></div>
-              </button>
+              <button
+          onClick={handlePrimaryAction}
+          disabled={isLoading}
+          className={`group px-6 sm:px-8 py-3 sm:py-4 bg-[#063A3A] text-[#CBDCBD] rounded-xl text-base sm:text-lg font-bold 
+          transition-all duration-300 flex items-center space-x-2 relative overflow-hidden
+          ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:scale-105 hover:shadow-2xl"}`}
+        >
+          <span className="relative z-10">
+            {isLoading ? "Checking..." : "Get Started Free"}
+          </span>
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
+        </button>
 
-              <button className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-[#063A3A] text-[#063A3A] rounded-xl text-base sm:text-lg font-bold hover:bg-[#063A3A] hover:text-[#CBDCBD] hover:scale-105 transition-all duration-300">
-                Watch Demo
-              </button>
+              <button
+          onClick={handlePrimaryAction}
+          disabled={isLoading}
+          className={`px-6 sm:px-8 py-3 sm:py-4 border-2 border-[#063A3A] text-[#063A3A] rounded-xl 
+          text-base sm:text-lg font-bold transition-all duration-300
+          ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#063A3A] hover:text-[#CBDCBD] hover:scale-105"}`}
+        >
+          Watch Demo
+        </button>
             </div>
 
             {/* USER TRUST SECTION */}

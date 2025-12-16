@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Eye, Users, TrendingUp, Clock, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
-import useAxios from '../Hooks/useAxios';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
+
 
 const NotificationAnalytics = ({ companyId }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openNotifications, setOpenNotifications] = useState(new Set());
-  const axios = useAxios();
+  const axios = useAxiosSecure();
 
   useEffect(() => {
     if (companyId) {

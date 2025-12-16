@@ -38,7 +38,7 @@ const onSubmit = (data) => {
 
       // Step 3 → Send to server (MongoDB)
       try {
-        const res = await fetch("http://localhost:3000/users", {
+        const res = await fetch("https://asset-verse-server-site.vercel.appusers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -143,7 +143,7 @@ const handleSignIn = () => {
 
             try {
                 checkRes = await fetch(
-                    `http://localhost:3000/users/check?email=${gUser.email}`
+                    `https://asset-verse-server-site.vercel.appusers/check?email=${gUser.email}`
                 );
                 checkData = await checkRes.json();
             } catch (err) {
@@ -155,7 +155,7 @@ const handleSignIn = () => {
             if (!checkData.found) {
                 try {
                     // Save new user to database without role
-                    const saveRes = await fetch("http://localhost:3000/users", {
+                    const saveRes = await fetch("https://asset-verse-server-site.vercel.appusers", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -230,6 +230,7 @@ const handleSignIn = () => {
 
   return (
     <div className="min-h-screen flex">
+      <title>Register</title>
       {/* Left Side - Image & Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 relative overflow-hidden sticky top-0 h-screen">
         {/* Background Pattern */}

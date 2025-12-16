@@ -23,106 +23,53 @@ import PaymentCancel from "../Pages/Dashboard/Payment/PaymentCancel";
 import PrivateRoute from "./PrivateRoute";
 import EmployeeRoute from "./EmployeeRoute";
 import HRRoute from "./HRRoute";
+import Errorpage from "../Pages/Home/Error/Errorpage";
+import DashboardErrorpage from "../Pages/Dashboard/Error/DashboardErrorpage";
 
 
 export const router = createBrowserRouter ([
 
-    {
-        path:"/",
-        Component: RootLayout,
-        children:[
-            {
-                index:true,
-                Component: Home
-                
-            },
+    // ========================================
+  // 🏠 PUBLIC ROUTES
+  // ========================================
+  {
+    path: "/",
+    Component: RootLayout,
+    errorElement: <Errorpage />, // ✅ Homepage error
+    children: [
+      {
+        index: true,
+        Component: Home,
+      },
+    ],
+  },
 
-           
+  // ========================================
+  // 🔐 AUTH ROUTES
+  // ========================================
+  {
+    path: "/",
+    Component: AuthLayout,
+    errorElement: <Errorpage />, // ✅ Auth error
+    children: [
+      {
+        path: "login",
+        Component: Login,
+      },
+      {
+        path: "register",
+        Component: Register,
+      },
+      {
+        path: "select-role",
+        Component: RolePage,
+      },
+    ],
+  },
 
-        
-        
-        ]
-
-
-
-    },
-    {
-        path: '/',
-        Component: AuthLayout,
-        children: [
-            {
-                path:'login',
-                Component: Login
-
-            },
-            {
-                path: 'register',
-                Component: Register
-            }, 
-            {
-                path:'select-role',
-                Component: RolePage
-                
-            }
-           
-            
-        ]
-    },
-    // {
-    //     path:"/hr-dashboard",
-    //     Component: DashboardLayout,
-    //     children: [
-    //         {
-    //             index:true,
-    //             Component: AssetListPage
-    //         },
-    //         {
-    //             path: 'add-asset',
-    //             Component: AddAssetPage
-    //         },
-    //         {
-    //             path: 'all-requests',
-    //             Component: AllRequestsPage
-    //         },
-    //         {
-    //             path: 'employee-list',
-    //             Component: EmployeeList
-    //         },
-    //         {
-    //             path: 'upgrade-package',
-    //             Component: UpgradePackage
-    //         },
-    //         {
-    //             path: 'profile',
-    //             Component: Profile
-    //         },
-    //         {
-    //             path: 'em-dashboard',
-    //             Component: MyAssets
-    //         },
-    //         {
-    //             path: 'request-asset',
-    //             Component: RequestAsset
-    //         },
-    //         {
-    //             path: 'my-team',
-    //             Component: MyTeam
-    //         },
-    //         {
-    //             path: 'success',
-    //             Component: PaymentSuccess
-    //         },
-    //         {
-    //             path: 'cancel',
-    //             Component: PaymentCancel
-    //         }
-                    
-
-
-    //     ]
-        
-    // }
-
+  // ========================================
+  // 👔 HR DASHBOARD ROUTES
+  // ========================================
   {
     path: "/hr-dashboard",
     element: (
@@ -132,6 +79,7 @@ export const router = createBrowserRouter ([
         </HRRoute>
       </PrivateRoute>
     ),
+    errorElement: <DashboardErrorpage />, // ✅ Dashboard error
     children: [
       {
         index: true,
@@ -193,30 +141,32 @@ export const router = createBrowserRouter ([
           </PrivateRoute>
         ),
       },
-              {
-          path: "success",
-          element: (
-            <PrivateRoute>
-              <HRRoute>
-                <PaymentSuccess />
-              </HRRoute>
-            </PrivateRoute>
-          )
-        },
-        {
-          path: "cancel",
-          element: (
-            <PrivateRoute>
-              <HRRoute>
-                <PaymentCancel />
-              </HRRoute>
-            </PrivateRoute>
-          )
-        }
+      {
+        path: "success",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <PaymentSuccess />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "cancel",
+        element: (
+          <PrivateRoute>
+            <HRRoute>
+              <PaymentCancel />
+            </HRRoute>
+          </PrivateRoute>
+        ),
+      },
     ],
   },
 
-
+  // ========================================
+  // 👨‍💼 EMPLOYEE DASHBOARD ROUTES
+  // ========================================
   {
     path: "/em-dashboard",
     element: (
@@ -226,6 +176,7 @@ export const router = createBrowserRouter ([
         </EmployeeRoute>
       </PrivateRoute>
     ),
+    errorElement: <DashboardErrorpage />, // ✅ Dashboard error
     children: [
       {
         index: true,
@@ -263,14 +214,22 @@ export const router = createBrowserRouter ([
           <PrivateRoute>
             <EmployeeRoute>
               <Profile />
-            </EmployeeRoute> 
-          </PrivateRoute> 
+            </EmployeeRoute>
+          </PrivateRoute>
         ),
       },
     ],
-  }
+  },
+
+  // ========================================
+  // ❌ CATCH-ALL ERROR ROUTE
+  // ========================================
+  {
+    path: "*",
+    element: <Errorpage />, // ✅ Any undefined route
+  },
+]);
 
     
   
     
-]);

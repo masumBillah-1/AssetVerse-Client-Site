@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, CheckCircle, AlertCircle, Package, Clock, Trash2, CheckCheck } from 'lucide-react';
-import useAxios from '../Hooks/useAxios';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
+
 
 const NotificationComponent = ({ userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
-  const axios = useAxios();
+  const axios = useAxiosSecure();
 
   // Fetch notifications from server
   useEffect(() => {
