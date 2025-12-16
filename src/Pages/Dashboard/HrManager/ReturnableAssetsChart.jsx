@@ -80,9 +80,9 @@ const ReturnableAssetsChart = ({ companyId }) => {
       ];
 
       setData(chartData);
-      console.log('✅ Pie chart data loaded:', chartData);
-    } catch (error) {
-      console.error('❌ Error fetching pie chart data:', error);
+      // console.log('✅ Pie chart data loaded:', chartData);
+    } catch  {
+      // console.error('❌ Error fetching pie chart data:', error);
     } finally {
       setLoading(false);
     }

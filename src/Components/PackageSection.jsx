@@ -5,57 +5,65 @@ import toast from "react-hot-toast";
 
 import useAuth from "../Hooks/useAuth";
 import useRole from "../Hooks/useRole";
-import useAxiosSecure from "../Hooks/useAxiosSecure";
+import useAxios from "../Hooks/useAxios";
+
 
 const PackageSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { role, isLoading } = useRole();
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxios(); // ✅ Use public axios
 
   const [packages, setPackages] = useState([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
 
-  // 🔹 Icon mapping (server এ icon নাই, তাই frontend mapping)
+  // 🔹 Icon mapping
   const iconMap = {
     Basic: Package,
     Standard: TrendingUp,
     Premium: Award,
   };
 
-  // 🔹 Fetch packages from server
+  // 🔹 Fetch packages from server (PUBLIC - no auth required)
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const res = await axiosSecure.get("/packages");
+        const res = await axiosPublic.get("/packages");
         setPackages(res.data);
       } catch (error) {
-        console.error("Failed to load packages", error);
+        // console.error("Failed to load packages", error);
+        toast.error("Failed to load packages");
       } finally {
         setLoadingPackages(false);
       }
     };
 
     fetchPackages();
-  }, [axiosSecure]);
+  }, [axiosPublic]);
 
   // 🔹 Package button handler
   const handleChoosePackage = (pkg) => {
     if (isLoading) return;
 
-    // 1️⃣ User not logged in
+    // 1️⃣ User not logged in → Login page
     if (!user) {
-      navigate("/register");
+      toast.error("Please login first to purchase a package");
+      navigate("/login", {
+        state: { 
+          from: "/",
+          message: "Login to purchase a package" 
+        }
+      });
       return;
     }
 
-    // 2️⃣ User is employee
+    // 2️⃣ User is employee → Show error
     if (role === "employee") {
-      toast.error("Please register as HR to purchase a package");
+      toast.error("Only HR can purchase packages. Please contact your HR manager.");
       return;
     }
 
-    // 3️⃣ User is HR
+    // 3️⃣ User is HR → Navigate to upgrade page
     if (role === "hr") {
       navigate("/hr-dashboard/upgrade-package", {
         state: {
@@ -65,6 +73,9 @@ const PackageSection = () => {
           limit: pkg.packageLimit,
         },
       });
+    } else {
+      // 4️⃣ Unknown role (fallback)
+      toast.error("Invalid user role. Please contact support.");
     }
   };
 
@@ -110,9 +121,12 @@ const PackageSection = () => {
 
           {/* Loader */}
           {loadingPackages ? (
-            <p className="text-center text-[#063A3A] font-semibold">
-              Loading packages...
-            </p>
+            <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-[#06393a]">Package Loading.....</p>
+        </div>
+      </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {packages.map((pkg) => {

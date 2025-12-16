@@ -30,15 +30,17 @@ const NotificationComponent = ({ userId }) => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      console.log('📡 Fetching notifications for userId:', userId);
+      // console.log('📡 Fetching notifications for userId:', userId);
       const { data } = await axios.get(`/notifications/${userId}`);
       
       if (data.success) {
         setNotifications(data.notifications);
-        console.log('✅ Notifications loaded:', data.notifications.length, 'items');
+        // console.log('✅ Notifications loaded:', data.notifications.length, 'items');
       }
-    } catch (error) {
-      console.error('❌ Error fetching notifications:', error);
+    } catch {
+      
+      // console.error('❌ Error fetching notifications:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ const NotificationComponent = ({ userId }) => {
   // ✅ Mark single notification as read
   const markAsRead = async (notificationId) => {
     try {
-      console.log('📝 Marking notification as read:', notificationId);
+      // console.log('📝 Marking notification as read:', notificationId);
       
       const { data } = await axios.patch(`/notifications/${notificationId}/read`, {
         userId: userId
@@ -58,19 +60,19 @@ const NotificationComponent = ({ userId }) => {
         setNotifications(notifications.map(notif =>
           notif._id === notificationId ? { ...notif, read: true } : notif
         ));
-        console.log('✅ Notification marked as read:', notificationId);
+        // console.log('✅ Notification marked as read:', notificationId);
       } else if (data.alreadyRead) {
-        console.log('ℹ️ Notification was already marked as read');
+        // console.log('ℹ️ Notification was already marked as read');
       }
     } catch (error) {
-      console.error('❌ Error marking notification as read:', error);
+      // console.error('❌ Error marking notification as read:', error);
     }
   };
 
   // ✅ Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      console.log('📝 Marking all notifications as read...');
+      // console.log('📝 Marking all notifications as read...');
       
       const { data } = await axios.patch('/notifications/mark-all-read', {
         userId: userId
@@ -78,10 +80,10 @@ const NotificationComponent = ({ userId }) => {
       
       if (data.success) {
         setNotifications(notifications.map(n => ({ ...n, read: true })));
-        console.log(`✅ ${data.totalMarked} notifications marked as read`);
+        // console.log(`✅ ${data.totalMarked} notifications marked as read`);
       }
     } catch (error) {
-      console.error('❌ Error marking all as read:', error);
+      // console.error('❌ Error marking all as read:', error);
     }
   };
 
@@ -96,10 +98,10 @@ const NotificationComponent = ({ userId }) => {
       
       if (data.success) {
         setNotifications(notifications.filter(n => n._id !== notificationId));
-        console.log('✅ Notification deleted');
+        // console.log('✅ Notification deleted');
       }
     } catch (error) {
-      console.error('❌ Error deleting notification:', error);
+      // console.error('❌ Error deleting notification:', error);
     }
   };
 
@@ -112,10 +114,10 @@ const NotificationComponent = ({ userId }) => {
       
       if (data.success) {
         setNotifications(notifications.filter(n => !n.read));
-        console.log(`✅ ${data.totalCleared} notifications cleared`);
+        // console.log(`✅ ${data.totalCleared} notifications cleared`);
       }
-    } catch (error) {
-      console.error('❌ Error clearing notifications:', error);
+    } catch {
+      // console.error('❌ Error clearing notifications:', error);
     }
   };
 

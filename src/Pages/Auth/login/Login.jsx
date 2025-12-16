@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from 'react-hot-toast';
 import useAuth from '../../../Hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation, Link } from 'react-router';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -21,7 +21,7 @@ const Login = () => {
         navigate(location?.state?.from || '/');
       })
       .catch((error) => {
-        console.log("Firebase error:", error.code, error.message);
+        // console.log("Firebase error:", error.code, error.message);
 
         if (error.code === "auth/invalid-credential") {
           toast.error("❌ Email or password is incorrect!");
@@ -41,7 +41,7 @@ const Login = () => {
       const gUser = result.user;
 
       const email = gUser.email?.trim().toLowerCase();
-      console.log("🔍 Checking Google user email:", email);
+      // console.log("🔍 Checking Google user email:", email);
 
       // ✅ Check if user exists in database
       const response = await fetch(
@@ -54,7 +54,7 @@ const Login = () => {
       }
 
       const checkData = await response.json();
-      console.log("📊 Check result:", checkData);
+      https://asset-verse-server-site.vercel.applog("📊 Check result:", checkData);
 
       // ❌ User না থাকলে register page এ পাঠান
       if (!checkData.found) {
@@ -105,8 +105,8 @@ const Login = () => {
         }
       }, 1000);
 
-    } catch (error) {
-      console.error("❌ Google Sign-In Error:", error);
+    } catch  {
+      // console.error("❌ Google Sign-In Error:", error);
       toast.error("❌ Google Login Failed! Please try again.");
     }
   };
@@ -124,11 +124,12 @@ const Login = () => {
       <div className="hidden lg:flex w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#063A3A] to-[#0A4D4D] opacity-90"></div>
         <div className="relative z-10 flex flex-col justify-center items-center w-full h-full p-16 text-white">
-          <h1 className="text-6xl font-extrabold mb-6">AssetVerse</h1>
-          <p className="text-xl mb-10 text-gray-200 text-center">
+          <h1 className="text-5xl font-extrabold mb-5">AssetVerse</h1>
+          <p className="text-xl mb-5 text-gray-200 text-center">
             Manage your corporate assets and workforce efficiently with our platform.
           </p>
-          {/* Illustration */}
+
+           {/* Illustration */}
           <div className="w-full max-w-md">
             <svg viewBox="0 0 400 300" className="w-full">
               <rect x="100" y="80" width="200" height="180" fill="#ffffff" opacity="0.1" rx="12"/>
@@ -137,6 +138,7 @@ const Login = () => {
             </svg>
           </div>
           {/* Trust Indicators */}
+         
           <div className="mt-12 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-[#063A3A] font-bold">✓</div>
@@ -194,7 +196,8 @@ const Login = () => {
                 <input type="checkbox" {...register("remember")} className="w-4 h-4 border-gray-300 rounded focus:ring-2 focus:ring-[#063A3A]" />
                 Remember me
               </label>
-              <a href="#" className="text-sm text-[#063A3A] hover:underline">Forgot Password?</a>
+              
+              <Link to={'/forget-password'} className="text-sm text-[#063A3A] hover:underline">Forgot Password?</Link>
             </div>
 
             <button

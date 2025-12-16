@@ -3,13 +3,18 @@ import { Package, Menu, X,} from 'lucide-react';
 import { Link } from 'react-router';
 import useAuth from '../../../Hooks/useAuth';
 import useRole from '../../../Hooks/useRole';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('home');
+    // 🔥 MongoDB user data state
+    const [mongoUser, setMongoUser] = useState(null);
+    const [userLoading, setUserLoading] = useState(true);
 
   const  {user, logOut} = useAuth();
+  const axios = useAxiosSecure()
 
    const { role: userRole } = useRole();
 
@@ -18,6 +23,28 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+
+  useEffect(() => {
+    const fetchMongoUser = async () => {
+      if (!user?.email) return;
+  
+      try {
+        setUserLoading(true);
+        const { data } = await axios.get(`/users/${user.email}`);
+        if (data.success) {
+          setMongoUser(data.user);
+          // console.log("✅ MongoDB User loaded:", data.user);
+        }
+      } catch  {
+        // console.error("❌ Error fetching MongoDB user:", error);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+  
+    fetchMongoUser();
+  }, [user?.email, axios]);
 
   const handleNavClick = (id) => {
     const section = document.getElementById(id);
@@ -34,8 +61,8 @@ const Navbar = () => {
    const handleLogout = ()=> {
         logOut()
         .then()
-        .catch(error => {
-          console.log(error)
+        .catch(() => {
+          // console.log(error)
         })
   }
 
@@ -117,22 +144,28 @@ const Navbar = () => {
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
         <div className="w-10 rounded-full">
           <img
-            alt="Tailwind CSS Navbar component"
-            src={user.photoURL} />
+                src={mongoUser?.photoURL || user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
+                alt="profile"
+                className="w-full h-full object-cover"
+              />
         </div>
       </div>
       <ul
-        tabIndex="-1"
-        className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-        <li>
-          <a className="justify-between">
-            Profile
-            <span className="badge">New</span>
-          </a>
-        </li>
-        <li><a>Settings</a></li>
-        <li><a>Logout</a></li>
-      </ul>
+          tabIndex="-1"
+          className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-56 p-3 shadow"
+        >
+          <li className="cursor-default">
+            <div className="flex flex-col space-y-1">
+              <span className="font-semibold text-base text-gray-800">
+                {mongoUser?.name || user?.displayName || "User"}
+              </span>
+
+              <span className="text-sm text-gray-500">
+                {mongoUser?.email || user?.email}
+              </span>
+            </div>
+          </li>
+        </ul>
     </div>
     
     <button onClick={handleLogout}  className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">

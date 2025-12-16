@@ -35,8 +35,8 @@ const MyTeam = () => {
               setSelectedCompanyId(data.user.affiliatedCompanies[0]);
             }
           }
-        } catch (error) {
-          console.error('Error fetching user:', error);
+        } catch {
+          // console.error('Error fetching user:', error);
         }
       }
     };
@@ -60,16 +60,16 @@ const MyTeam = () => {
                     logo: data.user.companyLogo
                   };
                 }
-              } catch (err) {
-                console.error(`Error fetching company ${companyId}:`, err);
+              } catch {
+                // console.error(`Error fetching company ${companyId}:`, err);
               }
               return null;
             })
           );
           
           setCompanyOptions(options.filter(Boolean));
-        } catch (error) {
-          console.error('Error fetching company options:', error);
+        } catch  {
+          // console.error('Error fetching company options:', error);
         }
       }
     };
@@ -99,8 +99,8 @@ const MyTeam = () => {
             const allMembers = [hrData.user, ...membersData.employees];
             setTeamMembers(allMembers);
           }
-        } catch (error) {
-          console.error('Error fetching team:', error);
+        } catch  {
+          // console.error('Error fetching team:', error);
         } finally {
           setLoading(false);
         }

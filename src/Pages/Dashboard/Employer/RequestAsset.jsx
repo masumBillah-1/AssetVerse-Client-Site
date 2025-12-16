@@ -32,8 +32,8 @@ const RequestAsset = () => {
       } else {
         setCompanies([]);
       }
-    } catch (error) {
-      console.error('Failed to fetch companies:', error);
+    } catch  {
+      // console.error('Failed to fetch companies:', error);
       
       try {
         const usersResponse = await axiosPublic.get('/users');
@@ -47,8 +47,8 @@ const RequestAsset = () => {
         
         const hrs = usersArray.filter(u => u.role === "hr" && u.companyName);
         setCompanies(hrs);
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
+      } catch  {
+        
         setCompanies([]);
       }
     }
@@ -64,8 +64,8 @@ const RequestAsset = () => {
       } else {
         setAssets([]);
       }
-    } catch (error) {
-      console.error('Failed to fetch assets:', error);
+    } catch {
+      // console.error('Failed to fetch assets:', error);
       setAssets([]);
     } finally {
       setLoading(false);
@@ -138,8 +138,8 @@ const RequestAsset = () => {
       setNote("");
       setSelectedAsset(null);
 
-    } catch (error) {
-      console.error("Failed to send request:", error);
+    } catch {
+      // console.error("Failed to send request:", error);
       
       Swal.fire({
         icon: 'error',

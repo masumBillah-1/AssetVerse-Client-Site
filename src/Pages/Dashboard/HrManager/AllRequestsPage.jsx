@@ -31,8 +31,8 @@ const AllRequestsPage = () => {
       const userEmail = localStorage.getItem('userEmail'); // Or from your auth context
       const response = await axiosInstance.get(`/users/${userEmail}`);
       setCurrentUser(response.data.user);
-    } catch (error) {
-      console.error('Error fetching user:', error);
+    } catch  {
+      // console.error('Error fetching user:', error);
     }
   };
 
@@ -42,7 +42,7 @@ const AllRequestsPage = () => {
       const companyId = currentUser.role === 'hr' ? currentUser._id : null;
       
       if (!companyId) {
-        console.error('Company ID not found');
+        // console.error('Company ID not found');
         setLoading(false);
         return;
       }
@@ -50,8 +50,8 @@ const AllRequestsPage = () => {
       const response = await axiosInstance.get(`/requests?companyId=${companyId}`);
       setRequests(response.data);
       setLoading(false);
-    } catch (error) {
-      console.error('Error fetching requests:', error);
+    } catch  {
+      // console.error('Error fetching requests:', error);
       setLoading(false);
     }
   };
@@ -70,8 +70,8 @@ const approveRequest = async (id) => {
         showConfirmButton: false
       });
     }
-  } catch (error) {
-    console.error('Error approving request:', error);
+  } catch {
+    // console.error('Error approving request:', error);
     
     // ✅ Check if package limit reached
     if (error.response?.data?.limitReached) {
@@ -120,8 +120,8 @@ const rejectRequest = async (id) => {
         showConfirmButton: false
       });
     }
-  } catch (error) {
-    console.error('Error rejecting request:', error);
+  } catch  {
+    // console.error('Error rejecting request:', error);
     Swal.fire({
       icon: 'error',
       title: 'Failed!',

@@ -1,5 +1,4 @@
 import { Users, Shield, Zap, TrendingUp, Package, Award, ArrowRight, Star } from 'lucide-react';
-import useAxiosSecure from '../Hooks/useAxiosSecure';
 import useAuth from '../Hooks/useAuth';
 import useRole from '../Hooks/useRole';
 import { useNavigate } from 'react-router';
@@ -9,7 +8,6 @@ import { useNavigate } from 'react-router';
 const Banner = () => {
 
 
-  const axios = useAxiosSecure();
   const { user } = useAuth();
   const { role, isLoading } = useRole();
   const navigate = useNavigate();

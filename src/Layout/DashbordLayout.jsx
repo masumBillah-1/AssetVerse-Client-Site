@@ -4,7 +4,6 @@ import { Outlet, useNavigate, useLocation, Link } from "react-router";
 import useRole from "../Hooks/useRole";
 import useAuth from "../Hooks/useAuth";
 import NotificationComponent from "../Components/Notification";
-import useAxios from "../Hooks/useAxios"; // 🔥 Import করুন
 import useAxiosSecure from "../Hooks/useAxiosSecure";
 
 export default function DashboardLayout() {
@@ -35,10 +34,10 @@ export default function DashboardLayout() {
       const { data } = await axios.get(`/users/${user.email}`);
       if (data.success) {
         setMongoUser(data.user);
-        console.log("✅ MongoDB User loaded:", data.user);
+        // console.log("✅ MongoDB User loaded:", data.user);
       }
-    } catch (error) {
-      console.error("❌ Error fetching MongoDB user:", error);
+    } catch {
+      // console.error("❌ Error fetching MongoDB user:", error);
     } finally {
       setUserLoading(false);
     }
@@ -94,8 +93,8 @@ export default function DashboardLayout() {
     .then(() => {
       navigate("/login"); // ✅ logout হলে login page
     })
-    .catch(error => {
-      console.log(error);
+    .catch(() => {
+      // console.log(error);
     });
 };
 

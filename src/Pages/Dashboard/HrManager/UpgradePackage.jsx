@@ -21,8 +21,8 @@ const UpgradePackage = () => {
       try {
         const res = await axiosInstance.get('/packages');
         setPackages(res.data);
-      } catch (err) {
-        console.error('Failed to fetch packages:', err);
+      } catch {
+        // console.error('Failed to fetch packages:', err);
         Swal.fire('Error', 'Failed to fetch packages', 'error');
       }
     };
@@ -33,7 +33,7 @@ const UpgradePackage = () => {
   const handleBuy = async (pkg) => {
     if (loadingId) return;
     setLoadingId(pkg._id);
-    console.log("User Email:", user?.email);
+    // console.log("User Email:", user?.email);
 
     // Save package info for payment success page
     localStorage.setItem('selectedPackageId', pkg._id);
@@ -54,8 +54,8 @@ const UpgradePackage = () => {
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (err) {
-      console.error('Checkout error:', err);
+    } catch {
+      // console.error('Checkout error:', err);
       Swal.fire('Error', 'Cannot initiate checkout. Please try again.', 'error');
       setLoadingId(null);
     }
@@ -82,8 +82,8 @@ useEffect(() => {
       const res = await axiosInstance.get(`/users/${user.email}`);
       setUser(res.data?.user); // শুধুমাত্র user object set করলাম
 
-    } catch (err) {
-      console.error('Failed to fetch user:', err);
+    } catch {
+      // console.error('Failed to fetch user:', err);
     }
   };
 

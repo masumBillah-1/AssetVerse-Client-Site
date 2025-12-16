@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useAuth from '../../../Hooks/useAuth';
 
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import Swal from 'sweetalert2';
 
 
 const MyAssets = () => {
@@ -27,38 +28,60 @@ const MyAssets = () => {
     );
 
     setMyAssets(data);
-  } catch (error) {
-    console.error("Failed to fetch assets:", error);
+  } catch  {
+    // console.error("Failed to fetch assets:", error);
   } finally {
     setLoading(false);
   }
 };
 
-  const handleReturn = async (requestId) => {
-    if (!window.confirm("Are you sure you want to return this asset?")) return;
+ const handleReturn = async (requestId) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "Do you want to return this asset?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, return it",
+    cancelButtonText: "Cancel",
+  });
 
-    try {
-      // Request status update করা
-      await axiosPublic.patch(`/requests/${requestId}`, {
-        requestStatus: "returned",
-        returnDate: new Date()
-      });
+  if (!result.isConfirmed) return;
 
-      // Local state update
-      setMyAssets(prev => 
-        prev.map(asset => 
-          asset._id === requestId 
-            ? { ...asset, requestStatus: "returned", returnDate: new Date() }
-            : asset
-        )
-      );
+  try {
+    await axiosPublic.patch(`/requests/${requestId}`, {
+      requestStatus: "returned",
+      returnDate: new Date(),
+    });
 
-      alert("✅ Asset returned successfully!");
-    } catch (error) {
-      console.error("Failed to return asset:", error);
-      alert("❌ Failed to return asset!");
-    }
-  };
+    setMyAssets((prev) =>
+      prev.map((asset) =>
+        asset._id === requestId
+          ? {
+              ...asset,
+              requestStatus: "returned",
+              returnDate: new Date(),
+            }
+          : asset
+      )
+    );
+
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: "Asset returned successfully!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch {
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: "Asset return failed. Please try again.",
+    });
+  }
+};
 
   const handlePrint = (asset) => {
     const printWindow = window.open('', '', 'width=800,height=600');

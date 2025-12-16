@@ -20,8 +20,8 @@ const EmployeeRoute = ({ children }) => {
                     }
                     setRoleLoading(false);
                 })
-                .catch(err => {
-                    console.error('Role fetch error:', err);
+                .catch(()=> {
+                    // console.error('Role fetch error:', err);
                     setRoleLoading(false);
                 });
         }

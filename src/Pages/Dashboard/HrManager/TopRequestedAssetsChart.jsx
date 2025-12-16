@@ -43,9 +43,9 @@ const TopRequestedAssetsChart = ({ companyId }) => {
         .slice(0, 5); // Take top 5
 
       setData(chartData);
-      console.log('✅ Bar chart data loaded:', chartData);
-    } catch (error) {
-      console.error('❌ Error fetching bar chart data:', error);
+      // console.log('✅ Bar chart data loaded:', chartData);
+    } catch  {
+      // console.error('❌ Error fetching bar chart data:', error);
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@ import {
 import useAuth from '../../../Hooks/useAuth';
 import useRole from '../../../Hooks/useRole';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import { Link } from 'react-router';
 
 const Profile = () => {
   const PRIMARY = '#06393a';
@@ -102,8 +103,8 @@ const Profile = () => {
                       hrEmail: hrRes.data.user.email
                     };
                   }
-                } catch (err) {
-                  console.error('Error fetching company:', err);
+                } catch  {
+                  // console.error('Error fetching company:', err);
                   return null;
                 }
               })
@@ -112,8 +113,8 @@ const Profile = () => {
           }
         }
       }
-    } catch (err) {
-      console.error('Error fetching profile:', err);
+    } catch  {
+      // console.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
     }
@@ -145,8 +146,8 @@ const Profile = () => {
         fetchProfileData();
         alert('✅ Profile updated successfully!');
       }
-    } catch (err) {
-      console.error(err);
+    } catch  {
+      // console.error(err);
       alert('❌ Failed to update profile');
     } finally {
       setSaving(false);
@@ -410,10 +411,10 @@ const Profile = () => {
                     <p className="text-2xl font-bold text-amber-900 capitalize">
                       {profileData.subscription || 'Basic'}
                     </p>
-                    <button className="mt-3 w-full bg-amber-600 text-white py-2 rounded-lg font-semibold hover:bg-amber-700 transition-colors flex items-center justify-center gap-2">
+                    <Link to={'/hr-dashboard/upgrade-package'} className="mt-3 w-full bg-amber-600 text-white py-2 rounded-lg font-semibold hover:bg-amber-700 transition-colors flex items-center justify-center gap-2">
                       <ArrowUpCircle size={16} />
                       Upgrade Package
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

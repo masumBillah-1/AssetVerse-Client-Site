@@ -21,10 +21,10 @@ const NotificationAnalytics = ({ companyId }) => {
       const { data } = await axios.get(`/notifications/company/${companyId}/analytics`);
       if (data.success) {
         setAnalytics(data);
-        console.log('✅ Analytics loaded:', data);
+        // console.log('✅ Analytics loaded:', data);
       }
     } catch (error) {
-      console.error('❌ Error fetching analytics:', error);
+      // console.error('❌ Error fetching analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -58,9 +58,9 @@ const NotificationAnalytics = ({ companyId }) => {
         }
       }));
 
-      console.log('✅ Notification deleted');
+      // console.log('✅ Notification deleted');
     } catch (error) {
-      console.error('❌ Error deleting notification:', error);
+      // console.error('❌ Error deleting notification:', error);
       alert('Failed to delete notification. Please try again.');
     }
   };
@@ -93,8 +93,8 @@ const NotificationAnalytics = ({ companyId }) => {
     return acc;
   }, []);
 
-  console.log('✅ Unique notifications:', uniqueNotifications.length);
-  console.log('📊 All notification types:', uniqueNotifications.map(n => n.notificationType));
+  // console.log('✅ Unique notifications:', uniqueNotifications.length);
+  // console.log('📊 All notification types:', uniqueNotifications.map(n => n.notificationType));
 
   return (
     <div className="space-y-6">

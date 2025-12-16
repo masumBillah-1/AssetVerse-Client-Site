@@ -56,8 +56,8 @@ const RolePage = () => {
       } else {
         showAlert('error', 'Registration Failed', response.data?.message || 'Something went wrong!');
       }
-    } catch (err) {
-      console.error('❌ API Error:', err);
+    } catch  {
+      // console.error('❌ API Error:', err);
       showAlert('error', 'Network Error', 'Failed to connect to server.');
     } finally {
       setLoading(false);

@@ -65,8 +65,8 @@ const PaymentSuccess = () => {
 
           setTimeout(() => navigate('/hr-dashboard/upgrade-package'), 2000);
         }
-      } catch (err) {
-        console.error('Payment save error:', err);
+      } catch {
+        // console.error('Payment save error:', err);
         Swal.fire('Error', 'Failed to save payment. Please contact support.', 'error');
         navigate('/dashboard/upgrade-package');
       }

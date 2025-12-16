@@ -47,7 +47,7 @@ const AssetListPage = () => {
         const userRes = await axiosSecure.get(`/users/${user.email}`);
         
         if (!userRes.data.success || !userRes.data.user) {
-          console.error('❌ User not found');
+          // console.error('❌ User not found');
           Swal.fire({
             icon: "error",
             title: "User Not Found",
@@ -59,7 +59,7 @@ const AssetListPage = () => {
         }
 
         const currentUser = userRes.data.user;
-        console.log('✅ Current user:', currentUser);
+        // console.log('✅ Current user:', currentUser);
 
         // Determine companyId
         let userCompanyId;
@@ -101,7 +101,7 @@ const AssetListPage = () => {
         });
         
         const allRequests = requestsRes.data || [];
-        console.log('✅ Requests fetched:', allRequests.length);
+        // console.log('✅ Requests fetched:', allRequests.length);
         
         // Count pending requests for this company
         const pendingRequestsCount = allRequests.filter(req => req.requestStatus === 'pending').length;
@@ -114,12 +114,12 @@ const AssetListPage = () => {
         setLoading(false);
 
       } catch (err) {
-        console.error('❌ Error fetching data:', err);
+        // console.error('❌ Error fetching data:', err);
         
         // More specific error messages
         if (err.response) {
           // Server responded with error
-          console.error('Server Error:', err.response.data);
+          // console.error('Server Error:', err.response.data);
           Swal.fire({
             icon: "error",
             title: "Server Error",
@@ -128,7 +128,7 @@ const AssetListPage = () => {
           });
         } else if (err.request) {
           // Request made but no response
-          console.error('Network Error:', err.request);
+          // console.error('Network Error:', err.request);
           Swal.fire({
             icon: "error",
             title: "Network Error",
@@ -137,7 +137,7 @@ const AssetListPage = () => {
           });
         } else {
           // Something else happened
-          console.error('Error:', err.message);
+          // console.error('Error:', err.message);
           Swal.fire({
             icon: "error",
             title: "Error",
@@ -176,7 +176,7 @@ const AssetListPage = () => {
         });
       }
     } catch (err) {
-      console.error('❌ Delete error:', err);
+      // console.error('❌ Delete error:', err);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -250,7 +250,7 @@ const AssetListPage = () => {
       setEditFormData({ assetName: '', quantity: 0, assetImage: '' });
 
     } catch (err) {
-      console.error('❌ Update error:', err);
+      // console.error('❌ Update error:', err);
       Swal.fire({
         icon: 'error',
         title: 'Update Failed',

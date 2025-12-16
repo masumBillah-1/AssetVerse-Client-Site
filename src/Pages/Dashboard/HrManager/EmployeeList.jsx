@@ -20,8 +20,8 @@ const EmployeeList = () => {
         const userEmail = localStorage.getItem('userEmail'); // Or from auth context
         const response = await axiosPublic.get(`/users/${userEmail}`);
         setCurrentUser(response.data.user);
-      } catch (error) {
-        console.error('Error fetching user:', error);
+      } catch  {
+        // console.error('Error fetching user:', error);
       }
     };
 
@@ -40,7 +40,7 @@ const EmployeeList = () => {
         const companyId = currentUser.role === 'hr' ? currentUser._id : null;
 
         if (!companyId) {
-          console.error('Company ID not found');
+          // console.error('Company ID not found');
           setLoading(false);
           return;
         }
@@ -48,8 +48,8 @@ const EmployeeList = () => {
         // Fetch only employees affiliated with this company
         const res = await axiosPublic.get(`/employees/company/${companyId}`);
         setEmployees(res.data.employees || []);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
+      } catch {
+        // console.error('Error fetching employees:', error);
       }
       setLoading(false);
     };
@@ -81,8 +81,8 @@ const EmployeeList = () => {
 
             Swal.fire("Removed!", "Employee has been removed.", "success");
           }
-        } catch (error) {
-          console.log(error);
+        } catch  {
+ 
           Swal.fire("Error", "Failed to remove employee", "error");
         }
       }

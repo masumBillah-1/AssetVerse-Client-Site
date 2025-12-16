@@ -25,6 +25,7 @@ import EmployeeRoute from "./EmployeeRoute";
 import HRRoute from "./HRRoute";
 import Errorpage from "../Pages/Home/Error/Errorpage";
 import DashboardErrorpage from "../Pages/Dashboard/Error/DashboardErrorpage";
+import ForgetPassword from "../Pages/Auth/ForgetPassword/ForgotPassword";
 
 
 export const router = createBrowserRouter ([
@@ -64,6 +65,10 @@ export const router = createBrowserRouter ([
         path: "select-role",
         Component: RolePage,
       },
+      {
+          path: "/forget-password",
+          Component: ForgetPassword
+       },
     ],
   },
 

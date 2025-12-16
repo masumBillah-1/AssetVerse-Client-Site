@@ -18,12 +18,12 @@ const Register = () => {
 
 const onSubmit = (data) => {
   setIsSubmitting(true);
-  console.log("Form Data:", data);
+  // console.log("Form Data:", data);
 
   // Step 1 → Firebase Register
   registerUser(data.email, data.password)
     .then(async (result) => {
-      console.log("Firebase User:", result);
+      // console.log("Firebase User:", result);
 
       const user = result.user;
 
@@ -38,14 +38,14 @@ const onSubmit = (data) => {
 
       // Step 3 → Send to server (MongoDB)
       try {
-        const res = await fetch("https://asset-verse-server-site.vercel.appusers", {
+        const res = await fetch("https://asset-verse-server-site.vercel.app/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
         const serverResponse = await res.json();
-        console.log("Saved to Server:", serverResponse);
+        // console.log("Saved to Server:", serverResponse);
 
         if (serverResponse.success) {
           // ✅ SweetAlert success
@@ -68,7 +68,7 @@ const onSubmit = (data) => {
         }
 
       } catch (error) {
-        console.log("Server Error:", error);
+        // console.log("Server Error:", error);
         Swal.fire({
           icon: "error",
           title: "Server Error",
@@ -77,7 +77,7 @@ const onSubmit = (data) => {
       }
     })
     .catch((error) => {
-      console.log("Firebase Error:", error);
+      // console.log("Firebase Error:", error);
       Swal.fire({
         icon: "error",
         title: "Firebase Error",
@@ -126,7 +126,7 @@ const handleSignIn = () => {
         .then(async (result) => {
 
             const gUser = result.user;
-            console.log("Google User:", gUser);
+            // console.log("Google User:", gUser);
 
             const userInfo = {
                 name: gUser.displayName,
@@ -143,7 +143,7 @@ const handleSignIn = () => {
 
             try {
                 checkRes = await fetch(
-                    `https://asset-verse-server-site.vercel.appusers/check?email=${gUser.email}`
+                    `https://asset-verse-server-site.vercel.app/users/check?email=${gUser.email}`
                 );
                 checkData = await checkRes.json();
             } catch (err) {
@@ -155,7 +155,7 @@ const handleSignIn = () => {
             if (!checkData.found) {
                 try {
                     // Save new user to database without role
-                    const saveRes = await fetch("https://asset-verse-server-site.vercel.appusers", {
+                    const saveRes = await fetch("https://asset-verse-server-site.vercel.app/users", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -174,8 +174,8 @@ const handleSignIn = () => {
                         toast.error(saveData.message || "Failed to create account!");
                     }
 
-                } catch (err) {
-                    console.error("Error saving user:", err);
+                } catch  {
+                    // console.error("Error saving user:", err);
                     toast.error("Failed to save user data!");
                 }
                 return;
@@ -218,8 +218,8 @@ const handleSignIn = () => {
             }
 
         })
-        .catch((error) => {
-            console.log("Google Error:", error);
+        .catch(() => {
+            // console.log("Google Error:", error);
             toast.error("Google Login Failed!");
         });
 
@@ -243,22 +243,29 @@ const handleSignIn = () => {
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
           <div className="max-w-md space-y-6">
             {/* Logo/Icon */}
+            <div className="flex gap-10 justify-center items-center">
+
             <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             
-            <h1 className="text-5xl font-bold leading-tight">
+            <h1 className="text-4xl font-bold leading-tight">
               Welcome to Your<br />HR Management<br />Platform
             </h1>
             
+
+
+
+
+            </div>
             <p className="text-xl text-emerald-100">
               Join thousands of companies managing their workforce efficiently with our powerful tools.
             </p>
             
             {/* Progress Steps */}
-            <div className="mt-12 space-y-4">
+            <div className="mt-10 space-y-4">
               <div className={`flex items-center gap-3 ${currentStep >= 1 ? 'opacity-100' : 'opacity-50'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 1 ? 'bg-white text-emerald-900' : 'bg-white/20 text-white'}`}>
                   {currentStep > 1 ? '✓' : '1'}
