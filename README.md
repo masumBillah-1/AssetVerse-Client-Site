@@ -1,8 +1,7 @@
-# AssetVerse
-
-<p align="center">
-  <img src="./public/assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
-</p>
+<h1 align="center">
+  <img src="./public/assetverse-favicon.svg" alt="AssetVerse Logo" width="48" style="vertical-align: middle;" />
+  <span style="margin-left: 10px;">AssetVerse</span>
+</h1>
 
 
 
