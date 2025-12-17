@@ -1,8 +1,9 @@
 # AssetVerse
 
 <p align="center">
-  <img src="./assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
+  <img src="./public/assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
 </p>
+
 
 
 ---
