@@ -1,14 +1,12 @@
 import axios from 'axios';
 import React from 'react';
 
-
 const axiosInstance = axios.create({
-    baseURL:'https://asset-verse-server-site.vercel.app'
-})
-
+    baseURL: import.meta.env.VITE_API_URL, // <-- process.env নয়
+});
 
 const useAxios = () => {
-    return axiosInstance
+    return axiosInstance;
 };
 
 export default useAxios;

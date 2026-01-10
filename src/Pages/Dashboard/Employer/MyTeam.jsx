@@ -227,7 +227,7 @@ const MyTeam = () => {
             {upcomingBirthdays.map((member, i) => (
               <div key={i} className="bg-white/20 backdrop-blur-sm p-4 rounded-xl flex items-center space-x-4 hover:bg-white/30 transition-all">
                 <img 
-                  src={member.photoURL || 'https://i.ibb.co/ygZpQ9Y/default-avatar.png'} 
+                  src={member.photoURL || 'https://ctechinfomedia.in/img/avtar%20team.jpg'} 
                   alt={member.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -269,7 +269,7 @@ const MyTeam = () => {
               >
                 <div className="flex items-center space-x-4">
                   <img 
-                    src={member.photoURL || 'https://i.ibb.co/ygZpQ9Y/default-avatar.png'} 
+                    src={member.photoURL || 'https://ctechinfomedia.in/img/avtar%20team.jpg'} 
                     alt={member.name}
                     className="w-14 h-14 rounded-full object-cover border-2 border-[var(--primary)]"
                   />

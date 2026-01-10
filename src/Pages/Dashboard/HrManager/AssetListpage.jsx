@@ -328,7 +328,7 @@ const AssetListPage = () => {
               </div>
             </div>
             <div className="text-3xl font-black text-[var(--primary)]">{stat.value}</div>
-            <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
+            <div className="text-sm text-gray-900 font-medium">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -359,7 +359,7 @@ const AssetListPage = () => {
               onChange={(e) => setSearch(e.target.value)} 
               type="text" 
               placeholder="Search assets..." 
-              className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[var(--primary)] focus:outline-none w-full" 
+              className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[var(--primary)] focus:outline-none w-full bg-white text-gray-900 placeholder-gray-400" 
             />
           </div>
         </div>
@@ -387,41 +387,41 @@ const AssetListPage = () => {
                         : "–"
                       }
                     </td>
-                    <td className="px-1 text-[12px] py-1 font-bold">{asset.assetName}</td>
+                    <td className="px-1 text-[12px] py-1 font-bold text-gray-900">{asset.assetName}</td>
                     <td className=" py-1">
                       <span className={`px-3 py-1 text-[12px] rounded-lg text-sm font-semibold ${asset.returnType === "returnable" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
                         {asset.returnType}
                       </span>
                     </td>
-                    <td className="px-2 text-center py-2">{asset.quantity}</td>
-                    <td className="px-2 py-2 text-center">{new Date(asset.addedAt).toLocaleDateString()}</td>
-                    <td className="px-1 text-[13px] font-medium text-center py-1">{asset.addedBy?.name || '-'}</td>
+                    <td className="px-2 text-center py-2 text-gray-900">{asset.quantity}</td>
+                    <td className="px-2 py-2 text-center text-gray-900">{new Date(asset.addedAt).toLocaleDateString()}</td>
+                    <td className="px-1 text-[13px] font-medium text-center py-1 text-gray-900">{asset.addedBy?.name || '-'}</td>
                     <td className="px-6 py-4 flex space-x-2">
                       {/* ✅ Edit Button */}
                       <button 
                         onClick={() => handleEditClick(asset)} 
-                        className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600 transition flex items-center space-x-1"
+                        className="btn btn-sm bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 border-none transition flex items-center space-x-1"
                         title="Edit Asset"
                       >
                         <Edit className="w-4 h-4" /> <span>Edit</span>
                       </button>
 
                       {asset.returnType === "returnable" && (
-                        <button className="btn btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
+                        <button className="btn btn-sm bg-orange-500 dark:bg-orange-600 text-white hover:bg-orange-600 dark:hover:bg-orange-700 border-none transition">
                           Return
                         </button>
                       )}
                       
                       <button 
                         onClick={() => handlePrint(asset)} 
-                        className="btn btn-sm bg-[var(--primary)] text-white hover:opacity-90 transition flex items-center space-x-1"
+                        className="btn btn-sm bg-[var(--primary)] dark:bg-green-700 text-white hover:opacity-90 dark:hover:bg-green-600 border-none transition flex items-center space-x-1"
                       >
                         <Printer className="w-4 h-4" /> <span>Print</span>
                       </button>
                       
                       <button 
                         onClick={() => deleteAsset(asset._id)} 
-                        className="btn btn-sm bg-red-100 text-red-700 flex items-center space-x-1"
+                        className="btn btn-sm bg-red-100 dark:bg-red-600 text-red-700 dark:text-white hover:bg-red-200 dark:hover:bg-red-700 border-none flex items-center space-x-1"
                       >
                         <Trash2 className="w-4 h-4" /> <span>Delete</span>
                       </button>
@@ -440,19 +440,19 @@ const AssetListPage = () => {
         </div>
 
         <div className="p-4 flex items-center justify-between">
-          <div className="text-sm text-gray-600">Page {page} of {totalPages || 1}</div>
+          <div className="text-sm text-gray-900">Page {page} of {totalPages || 1}</div>
           <div className="flex space-x-2">
             <button 
               onClick={() => setPage(p => Math.max(1, p - 1))} 
               disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 bg-white text-gray-900 hover:bg-gray-50"
             >
               Prev
             </button>
             <button 
               onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
               disabled={page === totalPages || totalPages === 0}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 bg-white text-gray-900 hover:bg-gray-50"
             >
               Next
             </button>
@@ -462,23 +462,23 @@ const AssetListPage = () => {
 
       {/* ✅ Edit Modal - DaisyUI */}
       <dialog id="edit_asset_modal" className="modal">
-        <div className="modal-box md:max-w-3xl">
+        <div className="modal-box md:max-w-3xl bg-white dark:bg-gray-800">
           <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 dark:text-white">✕</button>
           </form>
 
           <div className="text-center mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Edit className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Edit className="w-6 h-6 text-blue-600 dark:text-blue-300" />
             </div>
-            <h3 className="text-xl font-bold text-[var(--primary)]">Edit Asset</h3>
-            <p className="text-sm text-gray-600">Update asset information</p>
+            <h3 className="text-xl font-bold text-[var(--primary)] dark:text-white">Edit Asset</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Update asset information</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side - Image Preview */}
             <div className="flex items-center justify-center">
-              <div className="w-full h-64 border-2 border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center p-4">
+              <div className="w-full h-64 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-4">
                 {editFormData.assetImage ? (
                   <img 
                     src={editFormData.assetImage} 
@@ -490,9 +490,9 @@ const AssetListPage = () => {
                     }}
                   />
                 ) : (
-                  <span className="text-gray-400 text-sm text-center">Image preview will appear here</span>
+                  <span className="text-gray-400 dark:text-gray-500 text-sm text-center">Image preview will appear here</span>
                 )}
-                <div style={{display: 'none'}} className="flex-col items-center justify-center text-gray-400 text-sm">
+                <div style={{display: 'none'}} className="flex-col items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
                   <span>Invalid image URL</span>
                 </div>
               </div>
@@ -502,7 +502,7 @@ const AssetListPage = () => {
             <div className="space-y-3">
               {/* Asset Name */}
               <div>
-                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                <label className="block text-sm font-bold text-[var(--primary)] dark:text-white mb-1">
                   Asset Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -511,13 +511,13 @@ const AssetListPage = () => {
                   value={editFormData.assetName}
                   onChange={handleEditInputChange}
                   placeholder="Enter asset name"
-                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                  className="input input-bordered w-full focus:border-[var(--primary)] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                 />
               </div>
 
               {/* Quantity */}
               <div>
-                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                <label className="block text-sm font-bold text-[var(--primary)] dark:text-white mb-1">
                   Quantity <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -527,13 +527,13 @@ const AssetListPage = () => {
                   onChange={handleEditInputChange}
                   min="0"
                   placeholder="Enter quantity"
-                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                  className="input input-bordered w-full focus:border-[var(--primary)] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                 />
               </div>
 
               {/* Asset Image URL */}
               <div>
-                <label className="block text-sm font-bold text-[var(--primary)] mb-1">
+                <label className="block text-sm font-bold text-[var(--primary)] dark:text-white mb-1">
                   Image URL
                 </label>
                 <input
@@ -542,7 +542,7 @@ const AssetListPage = () => {
                   value={editFormData.assetImage}
                   onChange={handleEditInputChange}
                   placeholder="Enter image URL"
-                  className="input input-bordered w-full focus:border-[var(--primary)]"
+                  className="input input-bordered w-full focus:border-[var(--primary)] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                 />
               </div>
             </div>
@@ -556,13 +556,13 @@ const AssetListPage = () => {
                 disabled={!editFormData.assetName.trim() || updating}
                 className={`btn flex-1 ${
                   editFormData.assetName.trim() && !updating
-                    ? "bg-[var(--primary)] text-white hover:opacity-90"
+                    ? "bg-[var(--primary)] text-white hover:opacity-90 dark:bg-[var(--primary)] dark:text-white"
                     : "btn-disabled"
                 }`}
               >
                 {updating ? 'Updating...' : 'Update Asset'}
               </button>
-              <button type="submit" className="btn btn-ghost" disabled={updating}>
+              <button type="submit" className="btn btn-ghost dark:text-white dark:hover:bg-gray-700" disabled={updating}>
                 Cancel
               </button>
             </form>

@@ -20,20 +20,43 @@ const UpgradePackage = () => {
     const fetchPackages = async () => {
       try {
         const res = await axiosInstance.get('/packages');
+        console.log('✅ Packages fetched:', res.data.length);
         setPackages(res.data);
-      } catch {
-        // console.error('Failed to fetch packages:', err);
-        Swal.fire('Error', 'Failed to fetch packages', 'error');
+      } catch (error) {
+        console.error('❌ Failed to fetch packages:', error);
+        
+        if (error.response) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Server Error',
+            text: error.response.data?.error || error.response.data?.message || 'Failed to fetch packages',
+            confirmButtonColor: '#06393a'
+          });
+        } else if (error.request) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Poor Network Connection 🛜. Please check your internet.',
+            confirmButtonColor: '#06393a'
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to fetch packages. Please try again.',
+            confirmButtonColor: '#06393a'
+          });
+        }
       }
     };
     fetchPackages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Buy package → Stripe Checkout
   const handleBuy = async (pkg) => {
     if (loadingId) return;
     setLoadingId(pkg._id);
-    // console.log("User Email:", user?.email);
 
     // Save package info for payment success page
     localStorage.setItem('selectedPackageId', pkg._id);
@@ -54,9 +77,14 @@ const UpgradePackage = () => {
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch {
-      // console.error('Checkout error:', err);
-      Swal.fire('Error', 'Cannot initiate checkout. Please try again.', 'error');
+    } catch (error) {
+      console.error('❌ Checkout error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Checkout Failed',
+        text: 'Cannot initiate checkout. Please try again.',
+        confirmButtonColor: '#06393a'
+      });
       setLoadingId(null);
     }
   };
@@ -80,14 +108,16 @@ useEffect(() => {
       if (!user?.email) return;
 
       const res = await axiosInstance.get(`/users/${user.email}`);
-      setUser(res.data?.user); // শুধুমাত্র user object set করলাম
+      console.log('✅ User subscription:', res.data?.user?.subscription);
+      setUser(res.data?.user);
 
-    } catch {
-      // console.error('Failed to fetch user:', err);
+    } catch (error) {
+      console.error('❌ Failed to fetch user:', error);
     }
   };
 
   fetchUser();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [user?.email]);
 
   return (

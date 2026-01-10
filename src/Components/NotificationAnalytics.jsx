@@ -23,7 +23,7 @@ const NotificationAnalytics = ({ companyId }) => {
         setAnalytics(data);
         // console.log('✅ Analytics loaded:', data);
       }
-    } catch (error) {
+    } catch  {
       // console.error('❌ Error fetching analytics:', error);
     } finally {
       setLoading(false);

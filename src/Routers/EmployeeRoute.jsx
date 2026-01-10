@@ -1,31 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import useAuth from '../Hooks/useAuth';
 import useAxiosSecure from '../Hooks/useAxiosSecure';
-
 
 const EmployeeRoute = ({ children }) => {
     const { user, loading } = useAuth();
     const axios = useAxiosSecure();
-    const location = useLocation();
+    const navigate = useNavigate();
     const [userRole, setUserRole] = useState(null);
     const [roleLoading, setRoleLoading] = useState(true);
 
     useEffect(() => {
         if (user?.email) {
-            axios.get(`/users/${user.email}`)
+            console.log("🔍 Fetching role for:", user.email);
+            
+            axios.get(`/users/${encodeURIComponent(user.email)}/role`)
                 .then(res => {
-                    if (res.data.success) {
-                        setUserRole(res.data.user.role);
-                    }
+                    console.log("✅ Role response:", res.data);
+                    setUserRole(res.data.role);
                     setRoleLoading(false);
                 })
-                .catch(()=> {
-                    // console.error('Role fetch error:', err);
+                .catch((err) => {
+                    console.error('❌ Role fetch error:', err);
+                    console.error('Error details:', err.response?.data);
+                    
+                    // ✅ User not found - stay on current page, don't redirect
                     setRoleLoading(false);
                 });
         }
-    }, [user, axios]);
+    }, [user, axios, navigate]);
 
     if (loading || roleLoading) {
         return (
@@ -37,10 +40,17 @@ const EmployeeRoute = ({ children }) => {
     }
 
     if (!user) {
-        return <Navigate state={location.pathname} to={'/login'} />;
+        return <Navigate to={'/login'} />;
+    }
+
+    // ✅ Role না পেলে home এ redirect
+    if (!userRole) {
+        console.log("⚠️ No role found");
+        return <Navigate to={'/'} />;
     }
 
     if (userRole !== 'employee') {
+        console.log(`⚠️ Access denied: role is '${userRole}', expected 'employee'`);
         return (
             <div className="min-h-screen flex flex-col justify-center items-center bg-red-50">
                 <div className="text-center p-8 bg-white rounded-lg shadow-lg">
@@ -49,11 +59,18 @@ const EmployeeRoute = ({ children }) => {
                     </svg>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
                     <p className="text-gray-600 mb-4">This page is only accessible to Employees</p>
+                    <p className="text-sm text-gray-500 mb-4">Your current role: <span className="font-semibold">{userRole}</span></p>
                     <button 
-                        onClick={() => window.history.back()} 
+                        onClick={() => {
+                            if (userRole === 'hr') {
+                                navigate('/hr-dashboard');
+                            } else {
+                                navigate('/');
+                            }
+                        }} 
                         className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg"
                     >
-                        Go Back
+                        Go to {userRole === 'hr' ? 'HR Dashboard' : 'Home'}
                     </button>
                 </div>
             </div>

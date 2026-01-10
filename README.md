@@ -1,7 +1,7 @@
 # AssetVerse
 
 <p align="center">
-  <img src="./assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
+  <img src="./public/assetverse-favicon.svg" alt="AssetVerse Logo" width="120" />
 </p>
 
 
@@ -178,7 +178,7 @@ npm install
 npm run dev
 ```
 
-The client will run on `https://github.com/masumBillah-1/AssetVerse-Client-Site` (or your configured port)
+The client will run on `https://github.com/masumBillah-1/AssetVerse-Client-Site.git` (or your configured port)
 
 ### Server Setup
 
@@ -193,7 +193,7 @@ npm install
 nodemon index.js
 ```
 
-The server will run on `https://github.com/masumBillah-1/AssetVerse-Server-Site` (or your configured port)
+The server will run on `https://github.com/masumBillah-1/AssetVerse-Server-Site.git` (or your configured port)
 
 ---
 

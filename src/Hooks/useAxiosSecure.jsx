@@ -1,53 +1,58 @@
-import React from 'react';
-import axios from 'axios';
 import { useEffect } from 'react';
+import axios from 'axios';
 import useAuth from './useAuth';
 import { useNavigate } from 'react-router';
 
 const axiosSecure = axios.create({
-    baseURL:'https://asset-verse-server-site.vercel.app'
+    baseURL: import.meta.env.VITE_API_URL
 })
 
 const useAxiosSecure = () => {
+    const { user, logOut } = useAuth();
+    const navigate = useNavigate();
 
-    const {user,logOut} = useAuth();
-    const navigate = useNavigate()
-
-    useEffect(()=>{
-
-        const reqInterceptors = axiosSecure.interceptors.request.use(config => {
-            config.headers.Authorization = `Bearer ${user?.accessToken}`;
-            return config;
-        })
-
-
-
-        const resInterceptors = axiosSecure.interceptors.response.use((response)=> {
-            return response
-        },(error)=> {
-            // console.log(error);
-            const statusCode = error?.response?.status;
-            if(statusCode === 401 || statusCode === 403){
-                logOut()
-                .then(()=> {
-
-                    navigate('/login');
-
-                })
+    useEffect(() => {
+        // Request interceptor
+        const reqInterceptors = axiosSecure.interceptors.request.use(
+            async (config) => {
+                if (user) {
+                    try {
+                        // ✅ Get fresh Firebase ID token
+                        const token = await user.getIdToken();
+                        config.headers.Authorization = `Bearer ${token}`;
+                        // console.log('✅ Token added to request');
+                    } catch (error) {
+                        console.error('❌ Error getting token:', error);
+                    }
+                }
+                return config;
+            },
+            (error) => {
+                return Promise.reject(error);
             }
+        );
 
-            return Promise.reject(error)
-        })
+        // Response interceptor
+        const resInterceptors = axiosSecure.interceptors.response.use(
+            response => response,
+            error => {
+                const statusCode = error?.response?.status;
+                console.log('❌ API Error:', statusCode, error.response?.data);
+                
+                if (statusCode === 401 || statusCode === 403) {
+                    console.log('🔒 Unauthorized - logging out');
+                    logOut().then(() => navigate('/login'));
+                }
+                return Promise.reject(error);
+            }
+        );
 
-
-        return ()=> {
-            axiosSecure.interceptors.request.eject(reqInterceptors)
-            axiosSecure.interceptors.response.eject(resInterceptors)
-        }
-
-    
-    },[user, logOut, navigate])
-
+        // Cleanup
+        return () => {
+            axiosSecure.interceptors.request.eject(reqInterceptors);
+            axiosSecure.interceptors.response.eject(resInterceptors);
+        };
+    }, [user, logOut, navigate]);
 
     return axiosSecure;
 };

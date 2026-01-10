@@ -1,63 +1,101 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useAuth from "../../../Hooks/useAuth";
 
 
 
 const EmployeeList = () => {
   const axiosPublic = useAxiosSecure();
+  const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
   // -------------------------------------------------
-  //   Load current HR user
+  //   Load data when user is available
   // -------------------------------------------------
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const userEmail = localStorage.getItem('userEmail'); // Or from auth context
-        const response = await axiosPublic.get(`/users/${userEmail}`);
-        setCurrentUser(response.data.user);
-      } catch  {
-        // console.error('Error fetching user:', error);
-      }
-    };
-
-    fetchCurrentUser();
-  }, [axiosPublic]);
-
-  // -------------------------------------------------
-  //   Load employees of current HR's company
-  // -------------------------------------------------
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      if (!currentUser) return;
-
-      try {
-        // Get company ID (HR's _id)
-        const companyId = currentUser.role === 'hr' ? currentUser._id : null;
-
-        if (!companyId) {
-          // console.error('Company ID not found');
-          setLoading(false);
-          return;
-        }
-
-        // Fetch only employees affiliated with this company
-        const res = await axiosPublic.get(`/employees/company/${companyId}`);
-        setEmployees(res.data.employees || []);
-      } catch {
-        // console.error('Error fetching employees:', error);
-      }
-      setLoading(false);
-    };
-
-    if (currentUser) {
-      fetchEmployees();
+    if (user?.email) {
+      fetchData();
     }
-  }, [axiosPublic, currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch current user
+      const userResponse = await axiosPublic.get(`/users/${user.email}`);
+      
+      if (!userResponse.data.success || !userResponse.data.user) {
+        console.error('❌ User not found');
+        Swal.fire({
+          icon: "error",
+          title: "User Not Found",
+          text: "Could not fetch user data. Please login again.",
+          confirmButtonColor: '#06393a'
+        });
+        setLoading(false);
+        return;
+      }
+      
+      const userData = userResponse.data.user;
+      setCurrentUser(userData);
+
+      // Get company ID (HR's _id)
+      const companyId = userData.role === 'hr' ? userData._id : null;
+
+      if (!companyId) {
+        console.error('❌ Company ID not found');
+        Swal.fire({
+          icon: "warning",
+          title: "No Company Found",
+          text: "You are not affiliated with any company yet.",
+          confirmButtonColor: '#06393a'
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Fetching employees for company:', companyId);
+
+      // Fetch only employees affiliated with this company
+      const res = await axiosPublic.get(`/employees/company/${companyId}`);
+      console.log('✅ Employees fetched:', res.data.employees?.length || 0);
+      setEmployees(res.data.employees || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error fetching data:', error);
+      
+      if (error.response) {
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: error.response.data?.error || error.response.data?.message || "Failed to fetch data",
+          confirmButtonColor: '#06393a'
+        });
+      } else if (error.request) {
+        Swal.fire({
+          icon: "error",
+          title: "Network Error",
+          text: "Poor Network Connection 🛜. Please check your internet.",
+          confirmButtonColor: '#06393a'
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "An unexpected error occurred. Please try again.",
+          confirmButtonColor: '#06393a'
+        });
+      }
+      
+      setLoading(false);
+    }
+  };
 
   // -------------------------------------------------
   //   Remove Employee Function
@@ -81,8 +119,8 @@ const EmployeeList = () => {
 
             Swal.fire("Removed!", "Employee has been removed.", "success");
           }
-        } catch  {
- 
+        } catch (error) {
+          console.error('❌ Error removing employee:', error);
           Swal.fire("Error", "Failed to remove employee", "error");
         }
       }
@@ -135,7 +173,7 @@ const EmployeeList = () => {
 
               <button
                 onClick={() => removeEmployee(e._id)}
-                className="btn btn-sm bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors"
+                className="btn btn-sm bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors border-none"
               >
                 Remove
               </button>

@@ -27,17 +27,26 @@ export default function DashboardLayout() {
 
  useEffect(() => {
   const fetchMongoUser = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      console.log('⏳ Waiting for Firebase user...');
+      setUserLoading(false);
+      return;
+    }
 
     try {
       setUserLoading(true);
+      console.log('🔍 Fetching MongoDB user for:', user.email);
       const { data } = await axios.get(`/users/${user.email}`);
+      
       if (data.success) {
         setMongoUser(data.user);
-        // console.log("✅ MongoDB User loaded:", data.user);
+        console.log("✅ MongoDB User loaded:", data.user.name, data.user.role);
+      } else {
+        console.error("❌ User not found in database");
       }
-    } catch {
-      // console.error("❌ Error fetching MongoDB user:", error);
+    } catch (error) {
+      console.error("❌ Error fetching MongoDB user:", error);
+      console.error("Error details:", error.response?.data || error.message);
     } finally {
       setUserLoading(false);
     }
@@ -166,7 +175,7 @@ export default function DashboardLayout() {
               
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                src={mongoUser?.photoURL || user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
+                src={mongoUser?.photoURL || user?.photoURL || "https://ctechinfomedia.in/img/avtar%20team.jpg"}
                 alt="profile"
                 className="w-full h-full object-cover"
               />

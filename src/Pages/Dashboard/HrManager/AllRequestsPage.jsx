@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
-
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import useAuth from '../../../Hooks/useAuth';
 
 
 const AllRequestsPage = () => {
   const axiosInstance = useAxiosSecure();
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -15,44 +16,98 @@ const AllRequestsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCurrentUser();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchRequests();
+    if (user?.email) {
+      fetchData();
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [user?.email]);
 
-  const fetchCurrentUser = async () => {
+  const fetchData = async () => {
     try {
-      const userEmail = localStorage.getItem('userEmail'); // Or from your auth context
-      const response = await axiosInstance.get(`/users/${userEmail}`);
-      setCurrentUser(response.data.user);
-    } catch  {
-      // console.error('Error fetching user:', error);
+      setLoading(true);
+      
+      // Fetch user data
+      const userResponse = await axiosInstance.get(`/users/${user.email}`);
+      
+      if (!userResponse.data.success || !userResponse.data.user) {
+        console.error('❌ User not found');
+        Swal.fire({
+          icon: "error",
+          title: "User Not Found",
+          text: "Could not fetch user data. Please login again.",
+          confirmButtonColor: '#06393a'
+        });
+        setLoading(false);
+        return;
+      }
+      
+      const userData = userResponse.data.user;
+      setCurrentUser(userData);
+      
+      // Get companyId
+      const companyId = userData.role === 'hr' ? userData._id : null;
+      
+      if (!companyId) {
+        console.error('❌ Company ID not found');
+        Swal.fire({
+          icon: "warning",
+          title: "No Company Found",
+          text: "You are not affiliated with any company yet.",
+          confirmButtonColor: '#06393a'
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ Fetching requests for company:', companyId);
+
+      // Fetch requests
+      const requestsResponse = await axiosInstance.get(`/requests?companyId=${companyId}`);
+      console.log('✅ Requests fetched:', requestsResponse.data.length);
+      setRequests(requestsResponse.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error fetching data:', error);
+      
+      if (error.response) {
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: error.response.data?.error || error.response.data?.message || "Failed to fetch data",
+          confirmButtonColor: '#06393a'
+        });
+      } else if (error.request) {
+        Swal.fire({
+          icon: "error",
+          title: "Network Error",
+          text: "Poor Network Connection 🛜. Please check your internet.",
+          confirmButtonColor: '#06393a'
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "An unexpected error occurred. Please try again.",
+          confirmButtonColor: '#06393a'
+        });
+      }
+      
+      setLoading(false);
     }
   };
 
   const fetchRequests = async () => {
     try {
-      // Use companyId to filter requests
       const companyId = currentUser.role === 'hr' ? currentUser._id : null;
       
       if (!companyId) {
-        // console.error('Company ID not found');
-        setLoading(false);
         return;
       }
 
       const response = await axiosInstance.get(`/requests?companyId=${companyId}`);
       setRequests(response.data);
-      setLoading(false);
-    } catch  {
-      // console.error('Error fetching requests:', error);
-      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error fetching requests:', error);
     }
   };
 
@@ -70,8 +125,8 @@ const approveRequest = async (id) => {
         showConfirmButton: false
       });
     }
-  } catch {
-    // console.error('Error approving request:', error);
+  } catch (error) {
+    console.error('❌ Error approving request:', error);
     
     // ✅ Check if package limit reached
     if (error.response?.data?.limitReached) {
@@ -120,8 +175,8 @@ const rejectRequest = async (id) => {
         showConfirmButton: false
       });
     }
-  } catch  {
-    // console.error('Error rejecting request:', error);
+  } catch (error) {
+    console.error('❌ Error rejecting request:', error);
     Swal.fire({
       icon: 'error',
       title: 'Failed!',
@@ -278,14 +333,14 @@ const rejectRequest = async (id) => {
                             <>
                               <button 
                                 onClick={() => approveRequest(req._id)}
-                                className="bg-green-500 hover:bg-green-600 btn btn-sm text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                                className="bg-green-500 hover:bg-green-600 btn btn-sm text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg border-none"
                               >
                                 <CheckCircle className="w-4 h-4" />
                                 Approve
                               </button>
                               <button 
                                 onClick={() => rejectRequest(req._id)}
-                                className="btn btn-sm bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                                className="btn btn-sm bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg border-none"
                               >
                                 <XCircle className="w-4 h-4" />
                                 Reject

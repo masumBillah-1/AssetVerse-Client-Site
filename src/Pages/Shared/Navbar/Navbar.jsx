@@ -1,29 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Package, Menu, X,} from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link } from 'react-router';
 import useAuth from '../../../Hooks/useAuth';
 import useRole from '../../../Hooks/useRole';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import logo from '/assetverse-favicon.svg'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('home');
-    // 🔥 MongoDB user data state
-    const [mongoUser, setMongoUser] = useState(null);
-    const [userLoading, setUserLoading] = useState(true);
+  const [mongoUser, setMongoUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
 
-  const  {user, logOut} = useAuth();
-  const axios = useAxiosSecure()
-
-   const { role: userRole } = useRole();
+  const { user, logOut } = useAuth();
+  const axios = useAxiosSecure();
+  const { role: userRole } = useRole();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
 
   useEffect(() => {
     const fetchMongoUser = async () => {
@@ -34,10 +32,9 @@ const Navbar = () => {
         const { data } = await axios.get(`/users/${user.email}`);
         if (data.success) {
           setMongoUser(data.user);
-          // console.log("✅ MongoDB User loaded:", data.user);
         }
-      } catch  {
-        // console.error("❌ Error fetching MongoDB user:", error);
+      } catch {
+        // Error handling
       } finally {
         setUserLoading(false);
       }
@@ -58,14 +55,13 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-   const handleLogout = ()=> {
-        logOut()
-        .then()
-        .catch(() => {
-          // console.log(error)
-        })
+  const handleLogout = () => {
+    logOut()
+      .then()
+      .catch(() => {
+        // Error handling
+      });
   }
-
 
   const items = [
     { id: "home", label: "Home" },
@@ -89,9 +85,7 @@ const Navbar = () => {
 
           {/* Logo */}
           <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="w-12 h-12 bg-[#CBDCBD] rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
-              <Package className="w-7 h-7 text-[#063A3A]" />
-            </div>
+            <img className='w-15' src={logo} alt="" />
             <span className="text-3xl font-black text-[#CBDCBD]">AssetVerse</span>
           </div>
 
@@ -109,90 +103,72 @@ const Navbar = () => {
 
             <div className="w-px h-6 bg-[#CBDCBD]/30 mx-2"></div>
 
+            {user ? (
+              <Link
+                to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
+                className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to={'/register'} className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
+                  Join as Employee
+                </Link>
 
-           {user ? (
-  <Link
-    to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
-    className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
-  >
-    Dashboard
-  </Link>
-) : (
-  <>
-    <Link
-      className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
-    >
-      Join as Employee
-    </Link>
+                <Link
+                  to="/login"
+                  className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  Join as HR
+                </Link>
+              </>
+            )}
 
-    <Link
-      to="/login"
-      className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
-    >
-      Join as HR
-    </Link>
-  </>
-)}
-
-
-
-
-
-            
-              {
-                user ?  <><div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-        <div className="w-10 rounded-full">
-          <img
-                src={mongoUser?.photoURL || user?.photoURL || "https://i.ibb.co/ygZpQ9Y/default-avatar.png"}
-                alt="profile"
-                className="w-full h-full object-cover"
-              />
-        </div>
-      </div>
-      <ul
-          tabIndex="-1"
-          className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-56 p-3 shadow"
-        >
-          <li className="cursor-default">
-            <div className="flex flex-col space-y-1">
-              <span className="font-semibold text-base text-gray-800">
-                {mongoUser?.name || user?.displayName || "User"}
-              </span>
-
-              <span className="text-sm text-gray-500">
-                {mongoUser?.email || user?.email}
-              </span>
-            </div>
-          </li>
-        </ul>
-    </div>
-    
-    <button onClick={handleLogout}  className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              SignOut
-            </button>
-    
-    </> 
-    
-    
-    
-    : <>
-
-                 <Link to={'/login'} className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Login
-            </Link>
-
-            <Link to={'/register'} className="ml-2 px-6 py-2.5 bg-[#CBDCBD] text-[#063A3A] rounded-lg font-bold hover:scale-105 hover:shadow-lg transition-all duration-200">
-              Register
-            </Link>
+            {user ? (
+              <>
+                <div className="dropdown dropdown-end">
+                  <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                    <div className="w-10 rounded-full">
+                      <img
+                        src={mongoUser?.photoURL || user?.photoURL || "https://ctechinfomedia.in/img/avtar%20team.jpg"}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <ul
+                    tabIndex="-1"
+                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-56 p-3 shadow"
+                  >
+                    <li className="cursor-default">
+                      <div className="flex flex-col space-y-1">
+                        <span className="font-semibold text-base text-gray-800">
+                          {mongoUser?.name || user?.displayName || "User"}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {mongoUser?.email || user?.email}
+                        </span>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
                 
-                
-                
-                </>
-                
-               
-              }
-            
+                <button onClick={handleLogout} className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
+                  SignOut
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to={'/login'} className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
+                  Login
+                </Link>
+
+                <Link to={'/register'} className="ml-2 px-6 py-2.5 bg-[#CBDCBD] text-[#063A3A] rounded-lg font-bold hover:scale-105 hover:shadow-lg transition-all duration-200">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -220,55 +196,82 @@ const Navbar = () => {
 
             <div className="border-t border-[#CBDCBD]/20 my-2"></div>
 
-            <button className="block px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Join as Employee
-            </button>
-            <button className="block px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Join as HR
-            </button>
-            <button className="block px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium">
-              Login
-            </button>
-            <button className="block px-4 py-3 bg-[#CBDCBD] text-[#063A3A] rounded-lg font-bold text-center">
-              Register
-            </button>
+            {/* Mobile Menu - User Authenticated */}
+            {user ? (
+              <>
+                <Link 
+                  to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  Dashboard
+                </Link>
+
+                <div className="px-4 py-3 flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden">
+                    <img
+                      src={mongoUser?.photoURL || user?.photoURL || "https://ctechinfomedia.in/img/avtar%20team.jpg"}
+                      alt="profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-sm text-[#CBDCBD]">
+                      {mongoUser?.name || user?.displayName || "User"}
+                    </span>
+                    <span className="text-xs text-[#CBDCBD]/70">
+                      {mongoUser?.email || user?.email}
+                    </span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  SignOut
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to={'/register'}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  Join as Employee
+                </Link>
+                <Link 
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  Join as HR
+                </Link>
+                <Link 
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/register"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full px-4 py-3 bg-[#CBDCBD] text-[#063A3A] rounded-lg font-bold text-center"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </nav>
-
-
-
-
-
-
-
-
-
-
-
-
   );
 };
 
 export default Navbar;
-
-
-
