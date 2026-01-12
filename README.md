@@ -18,7 +18,7 @@
 ## 📸 Website Preview
 
 <p align="center">
-  <img src="/banner.png" alt="AssetVerse Website Preview" width="100%" />
+  <img src="https://i.ibb.co.com/vvQhrPg8/Screenshot-14.png" alt="AssetVerse Website Preview" width="100%" />
 </p>
 
 ---
