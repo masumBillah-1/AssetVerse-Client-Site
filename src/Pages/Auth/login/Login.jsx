@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import useAuth from '../../../Hooks/useAuth';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { motion } from 'motion/react';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -146,70 +147,150 @@ const Login = () => {
       <Toaster position="top-right" reverseOrder={false} />
       
       {/* Left Side - Branding / Illustration */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden">
+      <motion.div 
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden lg:flex w-1/2 relative overflow-hidden"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-[#063A3A] to-[#0A4D4D] opacity-90"></div>
         <div className="relative z-10 flex flex-col justify-center items-center w-full h-full px-12 text-white">
           {/* Logo/Brand */}
-          <div className="text-center mb-6">
+          <motion.div 
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6, type: "spring", stiffness: 100 }}
+            className="text-center mb-6"
+          >
             <h1 className="text-4xl font-extrabold mb-3 text-white dark:text-white">AssetVerse</h1>
             <p className="text-base text-gray-200 dark:text-gray-200">
               Manage your corporate assets efficiently
             </p>
-          </div>
+          </motion.div>
 
           {/* Illustration */}
-          <div className="w-full max-w-xs mb-6">
+          <motion.div 
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="w-full max-w-xs mb-6"
+          >
             <svg viewBox="0 0 400 300" className="w-full">
-              <rect x="100" y="80" width="200" height="180" fill="#ffffff" opacity="0.1" rx="12"/>
-              <circle cx="200" cy="140" r="30" fill="#ffffff" opacity="0.2"/>
-              <rect x="185" y="150" width="30" height="40" fill="#ffffff" opacity="0.2" rx="4"/>
+              <motion.rect 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+                x="100" y="80" width="200" height="180" fill="#ffffff" opacity="0.1" rx="12"
+              />
+              <motion.circle 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                cx="200" cy="140" r="30" fill="#ffffff" opacity="0.2"
+              />
+              <motion.rect 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+                x="185" y="150" width="30" height="40" fill="#ffffff" opacity="0.2" rx="4"
+              />
             </svg>
-          </div>
+          </motion.div>
 
           {/* Trust Indicators */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-[#063A3A] font-bold text-sm">✓</div>
-              <span className="text-sm text-white dark:text-white">Secure authentication</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-[#063A3A] font-bold text-sm">✓</div>
-              <span className="text-sm text-white dark:text-white">Trusted by 100+ companies</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-[#063A3A] font-bold text-sm">✓</div>
-              <span className="text-sm text-white dark:text-white">24/7 Support Available</span>
-            </div>
-          </div>
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="space-y-3"
+          >
+            {[
+              "Secure authentication",
+              "Trusted by 100+ companies",
+              "24/7 Support Available"
+            ].map((text, i) => (
+              <motion.div 
+                key={i}
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 1 + (i * 0.2), duration: 0.5 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-[#063A3A] font-bold text-sm">✓</div>
+                <span className="text-sm text-white dark:text-white">{text}</span>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white dark:bg-gray-900 p-6">
-        <div className="w-full max-w-md">
+      <motion.div 
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full lg:w-1/2 flex items-center justify-center bg-white dark:bg-gray-900 p-6"
+      >
+        <motion.div 
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="w-full max-w-md"
+        >
           {/* Back to Home Button */}
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#063A3A] dark:hover:text-[#CBDCBD] transition-colors mb-4 text-sm"
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#063A3A] dark:hover:text-[#CBDCBD] transition-colors mb-4 text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+          </motion.div>
 
-          <h2 className="text-3xl font-bold text-[#063A3A] dark:text-white text-center mb-3">Welcome Back</h2>
-          <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          <motion.h2 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="text-3xl font-bold text-[#063A3A] dark:text-white text-center mb-3"
+          >
+            Welcome Back
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm"
+          >
             Sign in to continue to AssetVerse
-          </p>
+          </motion.p>
+          
           {/* Register Links */}
-            <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-[#063A3A] dark:text-[#CBDCBD] font-semibold hover:underline">
-                Register here
-              </Link>
-            </p>
+          <motion.p 
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm"
+          >
+            Don't have an account?{' '}
+            <Link to="/register" className="text-[#063A3A] dark:text-[#CBDCBD] font-semibold hover:underline">
+              Register here
+            </Link>
+          </motion.p>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <motion.form 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            onSubmit={handleSubmit(onSubmit)} 
+            className="space-y-4"
+          >
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input
@@ -289,9 +370,9 @@ const Login = () => {
             </button>
 
             
-          </form>
-        </div>
-      </div>
+          </motion.form>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

@@ -17,7 +17,7 @@ import RequestAsset from "../Pages/Dashboard/Employer/RequestAsset";
 import AllRequestsPage from "../Pages/Dashboard/HrManager/AllRequestsPage";
 import AddAssetPage from "../Pages/Dashboard/HrManager/AddAssetPage";
 import Profile from "../Pages/Dashboard/Profile/Profile";
-import AssetListPage from "../Pages/Dashboard/HrManager/AssetListPage";
+import AssetListPage from "../Pages/Dashboard/HrManager/AssetListpage";
 import PaymentSuccess from "../Pages/Dashboard/Payment/PaymentSuccess";
 import PaymentCancel from "../Pages/Dashboard/Payment/PaymentCancel";
 import PrivateRoute from "./PrivateRoute";
@@ -26,6 +26,12 @@ import HRRoute from "./HRRoute";
 import Errorpage from "../Pages/Home/Error/Errorpage";
 import DashboardErrorpage from "../Pages/Dashboard/Error/DashboardErrorpage";
 import ForgetPassword from "../Pages/Auth/ForgetPassword/ForgotPassword";
+import Contact from "../Pages/Contact/Contact";
+import Privacy from "../Pages/Privacy/Privacy";
+import Terms from "../Pages/Terms/Terms";
+import Cookies from "../Pages/Cookies/Cookies";
+import GDPR from "../Pages/GDPR/GDPR";
+import Licenses from "../Pages/Licenses/Licenses";
 
 
 export const router = createBrowserRouter ([
@@ -41,6 +47,30 @@ export const router = createBrowserRouter ([
       {
         index: true,
         Component: Home,
+      },
+      {
+        path: "contact",
+        Component: Contact,
+      },
+      {
+        path: "privacy",
+        Component: Privacy,
+      },
+      {
+        path: "terms",
+        Component: Terms,
+      },
+      {
+        path: "cookies",
+        Component: Cookies,
+      },
+      {
+        path: "gdpr",
+        Component: GDPR,
+      },
+      {
+        path: "licenses",
+        Component: Licenses,
       },
     ],
   },

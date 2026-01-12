@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import useAuth from "../../../Hooks/useAuth";
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { motion } from 'motion/react';
 
 
 const Register = () => {
@@ -209,11 +210,38 @@ const handleSignIn = () => {
     <div className="min-h-screen flex">
       <title>Register</title>
       {/* Left Side - Image & Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 relative overflow-hidden sticky top-0 h-screen">
+      <motion.div 
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 relative overflow-hidden sticky top-0 h-screen"
+      >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 0]
+            }}
+            transition={{ 
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl"
+          ></motion.div>
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.3, 1],
+              rotate: [0, -90, 0]
+            }}
+            transition={{ 
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"
+          ></motion.div>
         </div>
         
         {/* Content */}
@@ -222,62 +250,98 @@ const handleSignIn = () => {
             {/* Logo/Icon */}
             <div className="flex gap-10 justify-center items-center">
 
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8">
+            <motion.div 
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, duration: 0.8, type: "spring", stiffness: 100 }}
+              className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8"
+            >
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-            </div>
+            </motion.div>
             
-            <h1 className="text-4xl font-bold leading-tight">
+            <motion.h1 
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="text-4xl font-bold leading-tight"
+            >
               Welcome to Your<br />HR Management<br />Platform
-            </h1>
+            </motion.h1>
             
 
 
 
 
             </div>
-            <p className="text-xl text-emerald-100">
+            <motion.p 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="text-xl text-emerald-100"
+            >
               Join thousands of companies managing their workforce efficiently with our powerful tools.
-            </p>
+            </motion.p>
             
             {/* Progress Steps */}
-            <div className="mt-10 space-y-4">
-              <div className={`flex items-center gap-3 ${currentStep >= 1 ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 1 ? 'bg-white text-emerald-900' : 'bg-white/20 text-white'}`}>
-                  {currentStep > 1 ? '✓' : '1'}
-                </div>
-                <span className="text-lg">Basic Information</span>
-              </div>
-              <div className={`flex items-center gap-3 ${currentStep >= 2 ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 2 ? 'bg-white text-emerald-900' : 'bg-white/20 text-white'}`}>
-                  {currentStep > 2 ? '✓' : '2'}
-                </div>
-                <span className="text-lg">Select Role</span>
-              </div>
-              <div className={`flex items-center gap-3 ${currentStep >= 3 ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 3 ? 'bg-white text-emerald-900' : 'bg-white/20 text-white'}`}>
-                  3
-                </div>
-                <span className="text-lg">Company Details (HR)</span>
-              </div>
-            </div>
+            <motion.div 
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="mt-10 space-y-4"
+            >
+              {[
+                { step: 1, label: "Basic Information" },
+                { step: 2, label: "Select Role" },
+                { step: 3, label: "Company Details (HR)" }
+              ].map((item, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 1.1 + (i * 0.2), duration: 0.5 }}
+                  className={`flex items-center gap-3 ${currentStep >= item.step ? 'opacity-100' : 'opacity-50'}`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= item.step ? 'bg-white text-emerald-900' : 'bg-white/20 text-white'}`}>
+                    {currentStep > item.step ? '✓' : item.step}
+                  </div>
+                  <span className="text-lg">{item.label}</span>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 overflow-y-auto bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800">
+      <motion.div 
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full lg:w-1/2 overflow-y-auto bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800"
+      >
         <div className="flex items-center justify-center min-h-screen p-2 sm:p-1">
-          <div className="w-full max-w-md py-2">
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="w-full max-w-md py-2"
+          >
             {/* Back to Home Button */}
-            <Link 
-              to="/" 
-              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors mb-3 text-sm"
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
+              <Link 
+                to="/" 
+                className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors mb-3 text-sm"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Link>
+            </motion.div>
 
             {/* Mobile Logo */}
             <div className="lg:hidden flex justify-center mb-8">
@@ -579,9 +643,9 @@ const handleSignIn = () => {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

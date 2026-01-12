@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 // eslint-disable-next-line no-unused-vars
 
 
 const AuthLayout = () => {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
     return (
         <div>
 

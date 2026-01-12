@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import useAuth from "../../../Hooks/useAuth";
+import { SimpleLoader } from "../../../Components/Loader";
 
 
 
@@ -131,12 +132,7 @@ const EmployeeList = () => {
   //   Loading State
   // -------------------------------------------------
   if (loading) {
-    return (
-     <div className="text-center py-12 min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#06393a' }}></div>
-          <p className="mt-4 text-gray-600">Loading ...</p>
-        </div>
-    );
+    return <SimpleLoader message="Loading employees..." />;
   }
 
   // -------------------------------------------------

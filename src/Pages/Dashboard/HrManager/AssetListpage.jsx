@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Package, FileText, Users, Search, Trash2, CheckCircle, Printer, Edit } from "lucide-react";
 import Swal from 'sweetalert2';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useAuth from '../../../Hooks/useAuth';
+import { SimpleLoader } from '../../../Components/Loader';
 
 // Import Charts
 import ReturnableAssetsChart from './ReturnableAssetsChart';
@@ -301,14 +302,7 @@ const AssetListPage = () => {
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto mb-4"></div>
-          <p className="text-lg font-semibold text-[#06393a]">Loading Assets...</p>
-        </div>
-      </div>
-    );
+    return <SimpleLoader message="Loading assets..." />;
   }
 
   return (

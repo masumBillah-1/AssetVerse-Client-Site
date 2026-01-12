@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Eye, Users, TrendingUp, Clock, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import useAxiosSecure from '../Hooks/useAxiosSecure';
+import Swal from 'sweetalert2';
 
 
 const NotificationAnalytics = ({ companyId }) => {
@@ -18,13 +19,19 @@ const NotificationAnalytics = ({ companyId }) => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
+      console.log('🔍 Fetching analytics for companyId:', companyId);
       const { data } = await axios.get(`/notifications/company/${companyId}/analytics`);
+      console.log('📊 Analytics response:', data);
+      
       if (data.success) {
         setAnalytics(data);
-        // console.log('✅ Analytics loaded:', data);
+        console.log('✅ Analytics loaded:', data.notifications.length, 'notifications');
+      } else {
+        console.error('❌ Analytics fetch failed:', data);
       }
-    } catch  {
-      // console.error('❌ Error fetching analytics:', error);
+    } catch (error) {
+      console.error('❌ Error fetching analytics:', error);
+      console.error('Error details:', error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -43,25 +50,50 @@ const NotificationAnalytics = ({ companyId }) => {
   };
 
   const handleDeleteNotification = async (notificationId) => {
-    const confirmed = confirm('Are you sure you want to delete this notification?');
-    if (!confirmed) return;
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you want to delete this notification?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#06393a',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`/notifications/${notificationId}`);
+      const { data } = await axios.delete(`/notifications/${notificationId}`, {
+        data: { userId: companyId }
+      });
       
-      setAnalytics(prev => ({
-        ...prev,
-        notifications: prev.notifications.filter(n => n._id !== notificationId),
-        analytics: {
-          ...prev.analytics,
-          totalNotifications: prev.analytics.totalNotifications - 1
-        }
-      }));
+      if (data.success) {
+        setAnalytics(prev => ({
+          ...prev,
+          notifications: prev.notifications.filter(n => n._id !== notificationId),
+          analytics: {
+            ...prev.analytics,
+            totalNotifications: prev.analytics.totalNotifications - 1
+          }
+        }));
 
-      // console.log('✅ Notification deleted');
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Notification has been deleted.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
     } catch (error) {
       // console.error('❌ Error deleting notification:', error);
-      alert('Failed to delete notification. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed!',
+        text: 'Failed to delete notification. Please try again.',
+        confirmButtonColor: '#06393a'
+      });
     }
   };
 
@@ -82,19 +114,10 @@ const NotificationAnalytics = ({ companyId }) => {
     );
   }
 
-  const { totalNotifications, totalReads, avgReadsPerNotification, unreadNotifications } = analytics.analytics;
+  const { totalReads, avgReadsPerNotification, unreadNotifications } = analytics.analytics;
 
-  // ✅ FIXED: Remove duplicate notifications by unique _id
-  const uniqueNotifications = analytics.notifications.reduce((acc, current) => {
-    const exists = acc.find(item => item._id === current._id);
-    if (!exists) {
-      acc.push(current);
-    }
-    return acc;
-  }, []);
-
-  // console.log('✅ Unique notifications:', uniqueNotifications.length);
-  // console.log('📊 All notification types:', uniqueNotifications.map(n => n.notificationType));
+  // Notifications are already unique from server
+  const notifications = analytics.notifications;
 
   return (
     <div className="space-y-6">
@@ -120,7 +143,7 @@ const NotificationAnalytics = ({ companyId }) => {
             </div>
           </div>
           <p className="text-sm text-gray-600 mb-1">Total Notifications</p>
-          <p className="text-3xl font-bold text-blue-600">{uniqueNotifications.length}</p>
+          <p className="text-3xl font-bold text-blue-600">{notifications.length}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-green-100 hover:shadow-xl transition">
@@ -159,13 +182,13 @@ const NotificationAnalytics = ({ companyId }) => {
         <div className="p-4 border-b border-gray-200">
           <h3 className="text-lg font-bold text-[#06393a]">All Notifications</h3>
           <p className="text-gray-600 text-xs mt-1">
-            View all company notifications ({uniqueNotifications.length} items)
+            View all company notifications ({notifications.length} items)
           </p>
         </div>
 
         <div className="divide-y divide-gray-200">
-          {uniqueNotifications.length > 0 ? (
-            uniqueNotifications.map((notif) => {
+          {notifications.length > 0 ? (
+            notifications.map((notif) => {
               const isOpen = openNotifications.has(notif._id);
               
               return (
@@ -323,7 +346,7 @@ const NotificationAnalytics = ({ companyId }) => {
       </div>
 
       {/* Engagement Insight */}
-      {uniqueNotifications.length > 0 && (
+      {notifications.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -332,7 +355,7 @@ const NotificationAnalytics = ({ companyId }) => {
             <div>
               <h4 className="font-bold text-gray-800 mb-2">Engagement Insights</h4>
               <p className="text-sm text-gray-700 mb-2">
-                You have <span className="font-bold text-blue-600">{uniqueNotifications.length}</span> total notifications.
+                You have <span className="font-bold text-blue-600">{notifications.length}</span> total notifications.
                 {totalReads > 0 && (
                   <> <span className="font-bold text-green-600">{totalReads}</span> reads across all notifications.</>
                 )}

@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import useAuth from '../../../Hooks/useAuth';
-import useRole from '../../../Hooks/useRole';
-import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import { useMongoUser } from '../../../context/UserContext';
 import logo from '/assetverse-favicon.svg'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('home');
-  const [mongoUser, setMongoUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
 
   const { user, logOut } = useAuth();
-  const axios = useAxiosSecure();
-  const { role: userRole } = useRole();
+  const { mongoUser, loading: userLoading, role: userRole } = useMongoUser();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -23,27 +21,15 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const fetchMongoUser = async () => {
-      if (!user?.email) return;
-  
-      try {
-        setUserLoading(true);
-        const { data } = await axios.get(`/users/${user.email}`);
-        if (data.success) {
-          setMongoUser(data.user);
-        }
-      } catch {
-        // Error handling
-      } finally {
-        setUserLoading(false);
-      }
-    };
-  
-    fetchMongoUser();
-  }, [user?.email, axios]);
-
   const handleNavClick = (id) => {
+    // If not on home page, navigate to home first with hash
+    if (location.pathname !== '/') {
+      navigate(`/#${id}`);
+      setIsMenuOpen(false);
+      return;
+    }
+
+    // If on home page, scroll to section
     const section = document.getElementById(id);
     if (section) {
       window.scrollTo({
@@ -64,7 +50,7 @@ const Navbar = () => {
   }
 
   const items = [
-    { id: "home", label: "Home" },
+    { id: "home", label: "Home", isLink: true },
     { id: "about", label: "About" },
     { id: "packages", label: "Packages" },
     { id: "features", label: "Features" },
@@ -79,33 +65,43 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#063A3A] shadow-xl' : 'bg-[#063A3A]'}`}>
+    <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#063A3A]/90 backdrop-blur-md shadow-xl' : 'bg-[#063A3A]/80 backdrop-blur-sm'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
 
           {/* Logo */}
-          <div className="flex items-center space-x-3 group cursor-pointer">
+          <Link to="/" className="flex items-center space-x-3 group cursor-pointer">
             <img className='w-15' src={logo} alt="" />
             <span className="text-3xl font-black text-[#CBDCBD]">AssetVerse</span>
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-1">
             {items.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={linkClass(item.id)}
-              >
-                {item.label}
-              </button>
+              item.isLink ? (
+                <Link
+                  key={item.id}
+                  to="/"
+                  className={linkClass(item.id)}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={linkClass(item.id)}
+                >
+                  {item.label}
+                </button>
+              )
             ))}
 
             <div className="w-px h-6 bg-[#CBDCBD]/30 mx-2"></div>
 
             {user ? (
               <Link
-                to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
+                to={userRole === "hr" ? "/hr-dashboard" : userRole === "employee" ? "/em-dashboard" : "/hr-dashboard"}
                 className="px-5 py-2 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
               >
                 Dashboard
@@ -181,17 +177,32 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="lg:hidden pb-6 space-y-2 animate-fade-in">
             {items.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`block w-full text-left px-4 py-3 rounded-lg font-medium ${
-                  active === item.id
-                    ? "bg-[#CBDCBD] text-[#063A3A]"
-                    : "text-[#CBDCBD] hover:bg-[#CBDCBD]/10"
-                }`}
-              >
-                {item.label}
-              </button>
+              item.isLink ? (
+                <Link
+                  key={item.id}
+                  to="/"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block w-full text-left px-4 py-3 rounded-lg font-medium ${
+                    active === item.id
+                      ? "bg-[#CBDCBD] text-[#063A3A]"
+                      : "text-[#CBDCBD] hover:bg-[#CBDCBD]/10"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`block w-full text-left px-4 py-3 rounded-lg font-medium ${
+                    active === item.id
+                      ? "bg-[#CBDCBD] text-[#063A3A]"
+                      : "text-[#CBDCBD] hover:bg-[#CBDCBD]/10"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              )
             ))}
 
             <div className="border-t border-[#CBDCBD]/20 my-2"></div>
@@ -200,7 +211,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to={userRole === "hr" ? "/hr-dashboard" : "/em-dashboard"}
+                  to={userRole === "hr" ? "/hr-dashboard" : userRole === "employee" ? "/em-dashboard" : "/hr-dashboard"}
                   onClick={() => setIsMenuOpen(false)}
                   className="block w-full text-left px-4 py-3 text-[#CBDCBD] hover:bg-[#CBDCBD]/10 rounded-lg font-medium"
                 >

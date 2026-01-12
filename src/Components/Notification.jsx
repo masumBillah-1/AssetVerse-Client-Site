@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, CheckCircle, AlertCircle, Package, Clock, Trash2, CheckCheck } from 'lucide-react';
 import useAxiosSecure from '../Hooks/useAxiosSecure';
 
@@ -16,12 +16,12 @@ const NotificationComponent = ({ userId }) => {
     }
   }, [userId]);
 
-  // ✅ Auto refresh notifications every 30 seconds when dropdown is open
+  // ✅ Auto refresh notifications every 60 seconds when dropdown is open (reduced from 30s)
   useEffect(() => {
     if (isOpen && userId) {
       const interval = setInterval(() => {
         fetchNotifications();
-      }, 30000); // 30 seconds
+      }, 60000); // 60 seconds - less frequent to reduce server load
 
       return () => clearInterval(interval);
     }

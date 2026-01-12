@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  User, Building2, Package, Users, Edit2, Save, X, Briefcase, 
-  Mail, Calendar, Shield, Award, TrendingUp, FileText, Clock,
-  CheckCircle, AlertCircle, CreditCard, Crown, Zap, ArrowUpCircle
+  User, Building2, Package, Users, Edit2, Save, X, 
+  Mail, Calendar, CheckCircle, AlertCircle, Crown, Zap, ArrowUpCircle, Clock, FileText
 } from 'lucide-react';
 
 import useAuth from '../../../Hooks/useAuth';
-import useRole from '../../../Hooks/useRole';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import { Link } from 'react-router';
 
 const Profile = () => {
   const PRIMARY = '#06393a';
-  const ACCENT = '#0a5557';
   const LIGHT_BG = '#f0f9f9';
-  const CARD_BG = '#ffffff';
   
   const axios = useAxiosSecure();
   const { user } = useAuth();
-  const { role: userRole, isLoading: roleLoading } = useRole();
 
   const [profileData, setProfileData] = useState(null);
   const [formData, setFormData] = useState({ 
@@ -163,7 +158,7 @@ const Profile = () => {
     return badges[subscription] || badges.basic;
   };
 
-  if (loading || roleLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: LIGHT_BG }}>
         <div className="text-center">

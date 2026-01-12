@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-
 import useAuth from '../../../Hooks/useAuth';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import { SimpleLoader } from '../../../Components/Loader';
 
 const RequestAsset = () => {
   const axiosPublic = useAxiosSecure();
@@ -169,14 +169,7 @@ const RequestAsset = () => {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto mb-4"></div>
-          <p className="text-[#06393a] font-semibold">Loading assets...</p>
-        </div>
-      </div>
-    );
+    return <SimpleLoader message="Loading assets..." />;
   }
 
   return (

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle, TrendingUp, Package, Award } from "lucide-react";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
-
 import useAuth from "../Hooks/useAuth";
 import useRole from "../Hooks/useRole";
 import useAxios from "../Hooks/useAxios";
+import { SimpleLoader } from "./Loader";
 
 
 const PackageSection = () => {
@@ -16,6 +16,52 @@ const PackageSection = () => {
 
   const [packages, setPackages] = useState([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
+
+  // 🔹 Fallback packages (if API fails)
+  const fallbackPackages = [
+    {
+      _id: "fallback-1",
+      name: "Basic",
+      price: 5,
+      packageLimit: 5,
+      popular: false,
+      features: [
+        "Up to 5 employees",
+        "Basic asset tracking",
+        "Email support",
+        "Monthly reports"
+      ]
+    },
+    {
+      _id: "fallback-2",
+      name: "Standard",
+      price: 8,
+      packageLimit: 10,
+      popular: true,
+      features: [
+        "Up to 10 employees",
+        "Advanced asset tracking",
+        "Priority email support",
+        "Weekly reports",
+        "Custom notifications"
+      ]
+    },
+    {
+      _id: "fallback-3",
+      name: "Premium",
+      price: 15,
+      packageLimit: 20,
+      popular: false,
+      features: [
+        "Up to 20 employees",
+        "Full asset management",
+        "24/7 priority support",
+        "Real-time analytics",
+        "Custom integrations",
+        "Dedicated account manager"
+      ]
+    }
+  ];
 
   // 🔹 Icon mapping
   const iconMap = {
@@ -28,11 +74,25 @@ const PackageSection = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
+        console.log('📦 Fetching packages from:', axiosPublic.defaults.baseURL + '/packages');
         const res = await axiosPublic.get("/packages");
-        setPackages(res.data);
+        console.log('✅ Full response:', res);
+        console.log('✅ Response data:', res.data);
+        
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          console.log('✅ Setting packages from API:', res.data.length, 'items');
+          setPackages(res.data);
+        } else {
+          console.warn('⚠️ No packages from API, using fallback data');
+          setPackages(fallbackPackages);
+          // Silently use fallback data
+        }
       } catch (error) {
-        // console.error("Failed to load packages", error);
-        toast.error("Failed to load packages");
+        console.error("❌ Failed to load packages:", error);
+        console.error("Error response:", error.response);
+        console.warn('⚠️ Using fallback packages due to error');
+        setPackages(fallbackPackages);
+        // Silently use fallback data without showing error toast
       } finally {
         setLoadingPackages(false);
       }
@@ -101,7 +161,7 @@ const PackageSection = () => {
       `}</style>
 
       {/* Packages Section */}
-      <section id="packages" className="py-20 px-4 bg-[#CBDCBD]">
+      <section id="packages" className="  py-20 px-4 bg-[#CBDCBD]">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
@@ -121,14 +181,14 @@ const PackageSection = () => {
 
           {/* Loader */}
           {loadingPackages ? (
-            <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto mb-4"></div>
-          <p className="text-lg font-semibold text-[#06393a]">Package Loading.....</p>
-        </div>
-      </div>
+            <SimpleLoader message="Loading packages..." />
+          ) : packages.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-2xl font-bold text-[#063A3A] mb-4">No packages available</p>
+              <p className="text-[#063A3A]/70">Please check console for errors or run seed script</p>
+            </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 w-11/12 mx-auto">
               {packages.map((pkg) => {
                 const Icon = iconMap[pkg.name] || Package;
                 const isPopular = pkg.popular || pkg.name === "Standard";
@@ -146,7 +206,7 @@ const PackageSection = () => {
                     {/* Popular Badge */}
                     {isPopular && (
                       <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <span className="px-6 py-2 bg-[#CBDCBD] text-[#063A3A] rounded-full text-sm font-black drop-shadow-lg">
+                        <span className="px-6 py-2 bg-[#CBDCBD] text-[#063A3A] rounded-full text-[12px] font-black drop-shadow-lg">
                           ⭐ MOST POPULAR
                         </span>
                       </div>

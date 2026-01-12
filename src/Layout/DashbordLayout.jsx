@@ -1,74 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { Menu, CheckCircle, AlertCircle, Clock, Package, Plus, FileText, Users, Crown, User, LogOut, Bell, Home } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Menu, Package, Plus, FileText, Users, Crown, User, LogOut, Home } from "lucide-react";
 import { Outlet, useNavigate, useLocation, Link } from "react-router";
-import useRole from "../Hooks/useRole";
 import useAuth from "../Hooks/useAuth";
+import { useMongoUser, UserProvider } from "../context/UserContext";
 import NotificationComponent from "../Components/Notification";
-import useAxiosSecure from "../Hooks/useAxiosSecure";
 
-export default function DashboardLayout() {
+function DashboardContent() {
   const PRIMARY = "#063A3A";
   const ACCENT = "#CBDCBD";
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  
-  // 🔥 MongoDB user data state
-  const [mongoUser, setMongoUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
-
 
   const navigate = useNavigate();
   const location = useLocation();
-  const axios = useAxiosSecure()
 
-  const { user, logOut } = useAuth(); // Firebase user
-  const { role: userRole, isLoading } = useRole();
+  const { user, logOut } = useAuth();
+  const { mongoUser, loading: userLoading, role: userRole, userId } = useMongoUser();
 
-
- useEffect(() => {
-  const fetchMongoUser = async () => {
-    if (!user?.email) {
-      console.log('⏳ Waiting for Firebase user...');
-      setUserLoading(false);
-      return;
-    }
-
-    try {
-      setUserLoading(true);
-      console.log('🔍 Fetching MongoDB user for:', user.email);
-      const { data } = await axios.get(`/users/${user.email}`);
-      
-      if (data.success) {
-        setMongoUser(data.user);
-        console.log("✅ MongoDB User loaded:", data.user.name, data.user.role);
-      } else {
-        console.error("❌ User not found in database");
-      }
-    } catch (error) {
-      console.error("❌ Error fetching MongoDB user:", error);
-      console.error("Error details:", error.response?.data || error.message);
-    } finally {
-      setUserLoading(false);
-    }
-  };
-
-  fetchMongoUser();
-}, [user?.email, axios]);
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   useEffect(() => {
-  if (!isLoading) {
-    if (userRole === "employee" && location.pathname.startsWith("/hr-dashboard")) {
-      navigate("/em-dashboard", { replace: true });
-    }
+    if (!userLoading && userRole) {
+      if (userRole === "employee" && location.pathname.startsWith("/hr-dashboard")) {
+        navigate("/em-dashboard", { replace: true });
+      }
 
-    if (userRole === "hr" && location.pathname.startsWith("/em-dashboard")) {
-      navigate("/hr-dashboard", { replace: true });
+      if (userRole === "hr" && location.pathname.startsWith("/em-dashboard")) {
+        navigate("/hr-dashboard", { replace: true });
+      }
     }
-  }
-}, [userRole, isLoading, location.pathname, navigate]);
+  }, [userRole, userLoading, location.pathname, navigate]);
 
   // Loading state
-  if (isLoading || userLoading) {
+  if (userLoading) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
         <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center">
@@ -100,7 +67,7 @@ export default function DashboardLayout() {
   const handleLogout = () => {
   logOut()
     .then(() => {
-      navigate("/login"); // ✅ logout হলে login page
+      navigate("/login");
     })
     .catch(() => {
       // console.log(error);
@@ -168,9 +135,9 @@ export default function DashboardLayout() {
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* 🔥 Notifications - MongoDB _id pass করা হচ্ছে */}
-              {mongoUser && (
-                <NotificationComponent userId={mongoUser._id} />
+              {/* 🔥 Notifications - MongoDB _id from context */}
+              {userId && (
+                <NotificationComponent userId={userId} />
               )}
               
               <div className="w-10 h-10 rounded-full overflow-hidden">
@@ -190,5 +157,13 @@ export default function DashboardLayout() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function DashboardLayout() {
+  return (
+    <UserProvider>
+      <DashboardContent />
+    </UserProvider>
   );
 }

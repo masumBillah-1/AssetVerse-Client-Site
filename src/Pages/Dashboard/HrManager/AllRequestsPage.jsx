@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useAuth from '../../../Hooks/useAuth';
+import { SimpleLoader } from '../../../Components/Loader';
 
 
 const AllRequestsPage = () => {
@@ -211,14 +212,7 @@ const rejectRequest = async (id) => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#06393a] mx-auto"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading requests...</p>
-        </div>
-      </div>
-    );
+    return <SimpleLoader message="Loading requests..." />;
   }
 
   return (

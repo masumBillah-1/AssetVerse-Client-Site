@@ -1,3 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Instant scroll for route changes (handled by JS) */
+* {
+  scroll-behavior: auto;
+}
+
