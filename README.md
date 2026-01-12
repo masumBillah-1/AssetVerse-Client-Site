@@ -15,7 +15,7 @@
 
 ---
 
-## 📸 Website Preview
+## 📸 Preview
 
 <p align="center">
   <img src="https://i.ibb.co.com/vvQhrPg8/Screenshot-14.png" alt="AssetVerse Website Preview" width="100%" />
@@ -23,7 +23,7 @@
 
 ---
 
-## �[ Overview
+## 📋 Overview
 
 AssetVerse helps organizations efficiently track company assets, manage employee requests, and maintain accountability across multiple teams. Built with React, Node.js, and MongoDB.
 
@@ -59,6 +59,68 @@ AssetVerse helps organizations efficiently track company assets, manage employee
 **Frontend:** React • React Router • Tailwind CSS • DaisyUI • Framer Motion • Recharts
 
 **Backend:** Node.js • Express • MongoDB • JWT • Stripe • Firebase Auth
+
+---
+
+## 📁 Project Structure
+
+```
+AssetVerse-Client-Site/
+├── public/
+│   ├── Banner.png
+│   ├── assetverse-favicon.svg
+│   └── _redirects
+├── src/
+│   ├── Components/          # Reusable UI components
+│   │   ├── Banner.jsx
+│   │   ├── About.jsx
+│   │   ├── FeaturesSection.jsx
+│   │   ├── PackageSection.jsx
+│   │   ├── FaqSection.jsx
+│   │   ├── WorkSection.jsx
+│   │   ├── Notification.jsx
+│   │   ├── NotificationAnalytics.jsx
+│   │   ├── Loader.jsx
+│   │   └── Logo.jsx
+│   ├── Pages/
+│   │   ├── Home/            # Landing page
+│   │   ├── Auth/            # Login & Register
+│   │   ├── Dashboard/       # HR & Employee dashboards
+│   │   ├── Contact/         # Contact page
+│   │   ├── Privacy/         # Privacy policy
+│   │   ├── Terms/           # Terms of service
+│   │   ├── Cookies/         # Cookie policy
+│   │   ├── GDPR/            # GDPR compliance
+│   │   ├── Licenses/        # Licenses page
+│   │   └── Shared/          # Navbar & Footer
+│   ├── Layout/
+│   │   ├── RootLayout.jsx   # Main layout wrapper
+│   │   ├── AuthLayout.jsx   # Auth pages layout
+│   │   └── DashbordLayout.jsx # Dashboard layout
+│   ├── Routers/
+│   │   ├── Router.jsx       # Main router config
+│   │   ├── PrivateRoute.jsx # Auth protection
+│   │   ├── HRRoute.jsx      # HR role protection
+│   │   └── EmployeeRoute.jsx # Employee role protection
+│   ├── context/
+│   │   ├── AuthProvider.jsx # Auth state management
+│   │   ├── AuthContext.jsx
+│   │   └── UserContext.jsx
+│   ├── Hooks/
+│   │   ├── useAuth.jsx      # Auth hook
+│   │   ├── useAxios.jsx     # Axios instance
+│   │   ├── useAxiosSecure.jsx # Secure axios with JWT
+│   │   └── useRole.jsx      # User role hook
+│   ├── firebase/
+│   │   └── firebase.config.js # Firebase setup
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── .env                     # Environment variables
+├── package.json
+├── vite.config.js
+└── README.md
+```
 
 ---
 
