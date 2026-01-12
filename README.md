@@ -9,8 +9,16 @@
 </p>
 
 <p align="center">
-  <a href="https://boisterous-blancmange-4da68a.netlify.app">🌐 Live Demo</a> •
+  <a href="https://asset-verse-client-site.vercel.app">🌐 Live Demo</a> •
   <a href="https://github.com/masumBillah-1/AssetVerse-Server-Site">🔗 Backend Repo</a>
+</p>
+
+---
+
+## 📸 Website Preview
+
+<p align="center">
+  <img src="./public/banner.png" alt="AssetVerse Website Preview" width="100%" />
 </p>
 
 ---
